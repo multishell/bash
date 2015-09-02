@@ -19,7 +19,7 @@
    Foundation, 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 #include "config.h"
-
+#include "bashtypes.h"
 #include "bashjmp.h"
 
 #include "command.h"

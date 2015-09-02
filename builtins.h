@@ -19,6 +19,7 @@
    Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA. */
 
 #include "config.h"
+#include "bashtypes.h"
 
 #if defined (HAVE_UNISTD_H)
 #  include <unistd.h>
