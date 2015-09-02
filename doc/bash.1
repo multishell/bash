@@ -9,6 +9,9 @@
 .\"	Last Change: Mon Nov 25 15:36:20 EST 1996
 .\"
 .\" bash_builtins, strip all but Built-Ins section
+.de zZ
+..
+.if !rzZ .nr zZ 0 \" avoid a warning about an undefined register
 .if \n(zZ=1 .ig zZ
 .TH BASH 1 "1996 Nov 25" GNU
 .\"
