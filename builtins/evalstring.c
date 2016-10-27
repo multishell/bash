@@ -67,6 +67,14 @@ int parse_and_execute_level = 0;
 
 static int cat_file __P((REDIRECT *));
 
+#if defined (HISTORY)
+static void
+set_history_remembering ()
+{
+  remember_on_history = enable_history_list;
+}
+#endif
+
 /* How to force parse_and_execute () to clean up after itself. */
 void
 parse_and_execute_cleanup ()
@@ -115,7 +123,10 @@ parse_and_execute (string, from_file, flags)
   lreset = flags & SEVAL_RESETLINE;
 
 #if defined (HISTORY)
-  unwind_protect_int (remember_on_history);	/* can be used in scripts */
+  if (parse_and_execute_level == 0)
+    add_unwind_protect (set_history_remembering, (char *)NULL);
+  else
+    unwind_protect_int (remember_on_history);	/* can be used in scripts */
 #  if defined (BANG_HISTORY)
   if (interactive_shell)
     {
