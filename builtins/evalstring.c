@@ -1,4 +1,6 @@
-/* Copyright (C) 1996 Free Software Foundation, Inc.
+/* Evaluate a string as one or more shell commands.
+
+   Copyright (C) 1996-2005 Free Software Foundation, Inc.
 
    This file is part of GNU Bash, the Bourne Again SHell.
 
@@ -41,7 +43,6 @@
 #include "../execute_cmd.h"
 #include "../redir.h"
 #include "../trap.h"
-#include "../bashintl.h"
 
 #if defined (HISTORY)
 #  include "../bashhist.h"
@@ -59,6 +60,7 @@ extern int indirection_level, startup_state, subshell_environment;
 extern int line_number;
 extern int last_command_exit_value;
 extern int running_trap;
+extern int loop_level;
 extern int posixly_correct;
 
 int parse_and_execute_level = 0;
@@ -106,6 +108,7 @@ parse_and_execute (string, from_file, flags)
   unwind_protect_jmp_buf (top_level);
   unwind_protect_int (indirection_level);
   unwind_protect_int (line_number);
+  unwind_protect_int (loop_level);
   if (flags & (SEVAL_NONINT|SEVAL_INTERACT))
     unwind_protect_int (interactive);
 
@@ -220,27 +223,6 @@ parse_and_execute (string, from_file, flags)
 	    {
 	      struct fd_bitmap *bitmap;
 
-	      if (flags & SEVAL_FUNCDEF)
-		{
-		  char *x;
-
-		  /* If the command parses to something other than a straight
-		     function definition, or if we have not consumed the entire
-		     string, or if the parser has transformed the function
-		     name (as parsing will if it begins or ends with shell
-		     whitespace, for example), reject the attempt */
-		  if (command->type != cm_function_def ||
-		      ((x = parser_remaining_input ()) && *x) ||
-		      (STREQ (from_file, command->value.Function_def->name->word) == 0))
-		    {
-		      internal_warning (_("%s: ignoring function definition attempt"), from_file);
-		      should_jump_to_top_level = 0;
-		      last_result = last_command_exit_value = EX_BADUSAGE;
-		      reset_parser ();
-		      break;
-		    }
-		}
-
 	      bitmap = new_fd_bitmap (FD_BITMAP_SIZE);
 	      begin_unwind_frame ("pe_dispose");
 	      add_unwind_protect (dispose_fd_bitmap, bitmap);
@@ -253,17 +235,21 @@ parse_and_execute (string, from_file, flags)
 	       * IF
 	       *   we were invoked as `bash -c' (startup_state == 2) AND
 	       *   parse_and_execute has not been called recursively AND
+	       *   we're not running a trap AND
 	       *   we have parsed the full command (string == '\0') AND
 	       *   we have a simple command without redirections AND
-	       *   the command is not being timed
+	       *   the command is not being timed AND
+	       *   the command's return status is not being inverted
 	       * THEN
 	       *   tell the execution code that we don't need to fork
 	       */
 	      if (startup_state == 2 && parse_and_execute_level == 1 &&
+		  running_trap == 0 &&
 		  *bash_input.location.string == '\0' &&
 		  command->type == cm_simple &&
 		  !command->redirects && !command->value.Simple->redirects &&
-		  ((command->flags & CMD_TIME_PIPELINE) == 0))
+		  ((command->flags & CMD_TIME_PIPELINE) == 0) &&
+		  ((command->flags & CMD_INVERT_RETURN) == 0))
 		{
 		  command->flags |= CMD_NO_FORK;
 		  command->value.Simple->flags |= CMD_NO_FORK;
@@ -292,12 +278,6 @@ parse_and_execute (string, from_file, flags)
 	      dispose_command (command);
 	      dispose_fd_bitmap (bitmap);
 	      discard_unwind_frame ("pe_dispose");
-
-	      if (flags & SEVAL_ONECMD)
-		{
-		  reset_parser ();
-		  break;
-		}
 	    }
 	}
       else
