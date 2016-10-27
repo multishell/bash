@@ -619,8 +619,11 @@ stop_pipeline (async, deferred)
 	   * once in the parent and once in each child.  This is where
 	   * the parent gives it away.
 	   *
+	   * Don't give the terminal away if this shell is an asynchronous
+	   * subshell.
+	   *
 	   */
-	  if (job_control && newjob->pgrp)
+	  if (job_control && newjob->pgrp && (subshell_environment&SUBSHELL_ASYNC) == 0)
 	    give_terminal_to (newjob->pgrp, 0);
 	}
     }
@@ -1690,7 +1693,7 @@ make_child (command, async_p)
 	     In this case, we don't want to give the terminal to the
 	     shell's process group (we could be in the middle of a
 	     pipeline, for example). */
-	  if (async_p == 0 && pipeline_pgrp != shell_pgrp)
+	  if (async_p == 0 && pipeline_pgrp != shell_pgrp && ((subshell_environment&SUBSHELL_ASYNC) == 0))
 	    give_terminal_to (pipeline_pgrp, 0);
 
 #if defined (PGRP_PIPE)
