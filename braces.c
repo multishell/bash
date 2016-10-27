@@ -402,7 +402,8 @@ brace_gobbler (text, tlen, indx, satisfy)
 	{
 	  pass_next = 1;
 	  i++;
-	  level++;
+	  if (quoted == 0)
+	    level++;
 	  continue;
 	}
 #endif
