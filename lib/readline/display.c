@@ -1744,7 +1744,10 @@ _rl_move_cursor_relative (new, data)
   if (MB_CUR_MAX > 1 && rl_byte_oriented == 0)
     {
       dpos = _rl_col_width (data, 0, new);
-      if (dpos > prompt_last_invisible)		/* XXX - don't use woff here */
+      /* Use NEW when comparing against the last invisible character in the
+	 prompt string, since they're both buffer indices and DPOS is a
+	 desired display position. */
+      if (new > prompt_last_invisible)		/* XXX - don't use woff here */
 	{
 	  dpos -= woff;
 	  /* Since this will be assigned to _rl_last_c_pos at the end (more
