@@ -910,6 +910,10 @@ rl_redisplay ()
 	     second and subsequent lines start at inv_lbreaks[N], offset by
 	     OFFSET (which has already been calculated above).  */
 
+#define INVIS_FIRST()	(prompt_physical_chars > _rl_screenwidth ? prompt_invis_chars_first_line : wrap_offset)
+#define WRAP_OFFSET(line, offset)  ((line == 0) \
+					? (offset ? INVIS_FIRST() : 0) \
+					: ((line == prompt_last_screen_line) ? wrap_offset-prompt_invis_chars_first_line : 0))
 #define W_OFFSET(line, offset) ((line) == 0 ? offset : 0)
 #define VIS_LLEN(l)	((l) > _rl_vis_botlin ? 0 : (vis_lbreaks[l+1] - vis_lbreaks[l]))
 #define INV_LLEN(l)	(inv_lbreaks[l+1] - inv_lbreaks[l])
@@ -944,7 +948,13 @@ rl_redisplay ()
 		  _rl_last_c_pos != o_cpos &&
 		  _rl_last_c_pos > wrap_offset &&
 		  o_cpos < prompt_last_invisible)
-		_rl_last_c_pos -= wrap_offset;
+		_rl_last_c_pos -= prompt_invis_chars_first_line;	/* XXX - was wrap_offset */
+	      else if (linenum == prompt_last_screen_line && prompt_physical_chars > _rl_screenwidth &&
+			(MB_CUR_MAX > 1 && rl_byte_oriented == 0) &&
+			cpos_adjusted == 0 &&
+			_rl_last_c_pos != o_cpos &&
+			_rl_last_c_pos > (prompt_last_invisible - _rl_screenwidth - prompt_invis_chars_first_line))
+		_rl_last_c_pos -= (wrap_offset-prompt_invis_chars_first_line);
 		  
 	      /* If this is the line with the prompt, we might need to
 		 compensate for invisible characters in the new line. Do
@@ -1204,7 +1214,7 @@ update_line (old, new, current_line, omax, nmax, inv_botlin)
      int current_line, omax, nmax, inv_botlin;
 {
   register char *ofd, *ols, *oe, *nfd, *nls, *ne;
-  int temp, lendiff, wsatend, od, nd, o_cpos;
+  int temp, lendiff, wsatend, od, nd, twidth, o_cpos;
   int current_invis_chars;
   int col_lendiff, col_temp;
 #if defined (HANDLE_MULTIBYTE)
@@ -1220,7 +1230,7 @@ update_line (old, new, current_line, omax, nmax, inv_botlin)
   if (MB_CUR_MAX > 1 && rl_byte_oriented == 0)
     temp = _rl_last_c_pos;
   else
-    temp = _rl_last_c_pos - W_OFFSET(_rl_last_v_pos, visible_wrap_offset);
+    temp = _rl_last_c_pos - WRAP_OFFSET (_rl_last_v_pos, visible_wrap_offset);
   if (temp == _rl_screenwidth && _rl_term_autowrap && !_rl_horizontal_scroll_mode
 	&& _rl_last_v_pos == current_line - 1)
     {
@@ -1586,15 +1596,15 @@ update_line (old, new, current_line, omax, nmax, inv_botlin)
 	  if ((temp - lendiff) > 0)
 	    {
 	      _rl_output_some_chars (nfd + lendiff, temp - lendiff);
-#if 1
 	     /* XXX -- this bears closer inspection.  Fixes a redisplay bug
 		reported against bash-3.0-alpha by Andreas Schwab involving
 		multibyte characters and prompt strings with invisible
 		characters, but was previously disabled. */
-	      _rl_last_c_pos += _rl_col_width (nfd+lendiff, 0, temp-col_lendiff);
-#else
-	      _rl_last_c_pos += _rl_col_width (nfd+lendiff, 0, temp-lendiff);
-#endif
+	      if (MB_CUR_MAX > 1 && rl_byte_oriented == 0)
+		twidth = _rl_col_width (nfd+lendiff, 0, temp-col_lendiff);
+	      else
+		twidth = temp - lendiff;
+	      _rl_last_c_pos += twidth;
 	    }
 	}
       else
@@ -1788,7 +1798,7 @@ _rl_move_cursor_relative (new, data)
   int woff;			/* number of invisible chars on current line */
   int cpos, dpos;		/* current and desired cursor positions */
 
-  woff = W_OFFSET (_rl_last_v_pos, wrap_offset);
+  woff = WRAP_OFFSET (_rl_last_v_pos, wrap_offset);
   cpos = _rl_last_c_pos;
 #if defined (HANDLE_MULTIBYTE)
   /* If we have multibyte characters, NEW is indexed by the buffer point in
@@ -1802,7 +1812,11 @@ _rl_move_cursor_relative (new, data)
       /* Use NEW when comparing against the last invisible character in the
 	 prompt string, since they're both buffer indices and DPOS is a
 	 desired display position. */
-      if (new > prompt_last_invisible)		/* XXX - don't use woff here */
+      if ((new > prompt_last_invisible) ||		/* XXX - don't use woff here */
+	  (prompt_physical_chars > _rl_screenwidth &&
+	   _rl_last_v_pos == prompt_last_screen_line &&
+	   wrap_offset != woff &&
+	   new > (prompt_last_invisible-_rl_screenwidth-wrap_offset)))
 	{
 	  dpos -= woff;
 	  /* Since this will be assigned to _rl_last_c_pos at the end (more
