@@ -3458,9 +3458,11 @@ push_func_var (data)
       if (shell_variables == global_variables)
 	var->attributes &= ~(att_tempvar|att_propagate);
       else
-        shell_variables->flags |= VC_HASTMPVAR;
+	shell_variables->flags |= VC_HASTMPVAR;
       v->attributes |= var->attributes;
     }
+  else
+    stupidly_hack_special_variables (var->name);	/* XXX */
 
   dispose_variable (var);
 }
@@ -3547,6 +3549,8 @@ push_exported_var (data)
 	var->attributes &= ~att_propagate;
       v->attributes |= var->attributes;
     }
+  else
+    stupidly_hack_special_variables (var->name);	/* XXX */
 
   dispose_variable (var);
 }
