@@ -1,6 +1,6 @@
 /* bashhist.c -- bash interface to the GNU history library. */
 
-/* Copyright (C) 1993-2012 Free Software Foundation, Inc.
+/* Copyright (C) 1993-2015 Free Software Foundation, Inc.
 
    This file is part of GNU Bash, the Bourne Again SHell.
 
@@ -83,8 +83,8 @@ static struct ignorevar histignore =
 /* Non-zero means to remember lines typed to the shell on the history
    list.  This is different than the user-controlled behaviour; this
    becomes zero when we read lines from a file, for example. */
-int remember_on_history = 1;
-int enable_history_list = 1;	/* value for `set -o history' */
+int remember_on_history = 0;
+int enable_history_list = 0;	/* value for `set -o history' */
 
 /* The number of lines that Bash has added to this history session.  The
    difference between the number of the top element in the history list
@@ -99,6 +99,8 @@ int history_lines_in_file;
 /* Non-zero means do no history expansion on this line, regardless
    of what history_expansion says. */
 int history_expansion_inhibited;
+/* If non-zero, double quotes can quote the history expansion character. */
+int double_quotes_inhibit_history_expansion = 0;
 #endif
 
 /* With the old default, every line was saved in the history individually.
@@ -186,7 +188,9 @@ extern int current_command_line_count;
 extern struct dstack dstack;
 extern int parser_state;
 
+#if defined (BANG_HISTORY)
 static int bash_history_inhibit_expansion __P((char *, int));
+#endif
 #if defined (READLINE)
 static void re_edit __P((char *));
 #endif
@@ -197,6 +201,7 @@ static HIST_ENTRY *last_history_entry __P((void));
 static char *expand_histignore_pattern __P((char *));
 static int history_should_ignore __P((char *));
 
+#if defined (BANG_HISTORY)
 /* Is the history expansion starting at string[i] one that should not
    be expanded? */
 static int
@@ -229,19 +234,30 @@ bash_history_inhibit_expansion (string, i)
 
   /* Make sure the history expansion should not be skipped by quoting or
      command/process substitution. */
-  else if ((t = skip_to_delim (string, 0, hx, SD_NOJMP|SD_HISTEXP)) > 0 && t > i)
-    return (1);
+  else if ((t = skip_to_histexp (string, 0, hx, SD_NOJMP|SD_HISTEXP)) > 0)
+    {
+      /* Skip instances of history expansion appearing on the line before
+	 this one. */
+      while (t < i)
+	{
+	  t = skip_to_histexp (string, t+1, hx, SD_NOJMP|SD_HISTEXP);
+	  if (t <= 0)
+	    return 0;
+	}
+      return (t > i);
+    }
   else
     return (0);
 }
+#endif
 
 void
 bash_initialize_history ()
 {
   history_quotes_inhibit_expansion = 1;
   history_search_delimiter_chars = ";&()|<>";
-  history_inhibit_expansion_function = bash_history_inhibit_expansion;
 #if defined (BANG_HISTORY)
+  history_inhibit_expansion_function = bash_history_inhibit_expansion;
   sv_histchars ("histchars");
 #endif
 }
@@ -252,10 +268,10 @@ bash_history_reinit (interact)
 {
 #if defined (BANG_HISTORY)
   history_expansion = interact != 0;
-  history_expansion_inhibited = 1;
-#endif
-  remember_on_history = enable_history_list = interact != 0;
+  history_expansion_inhibited = 1;	/* XXX */
   history_inhibit_expansion_function = bash_history_inhibit_expansion;
+#endif
+  remember_on_history = enable_history_list;
 }
 
 void
@@ -270,11 +286,11 @@ bash_history_disable ()
 void
 bash_history_enable ()
 {
-  remember_on_history = 1;
+  remember_on_history = enable_history_list = 1;
 #if defined (BANG_HISTORY)
   history_expansion_inhibited = 0;
-#endif
   history_inhibit_expansion_function = bash_history_inhibit_expansion;
+#endif
   sv_history_control ("HISTCONTROL");
   sv_histignore ("HISTIGNORE");
 }
@@ -658,7 +674,9 @@ hc_erasedups (line)
       if (STREQ (temp->line, line))
 	{
 	  r = where_history ();
-	  remove_history (r);
+	  temp = remove_history (r);
+	  if (temp)
+	    free_history_entry (temp);
 	}
     }
   using_history ();

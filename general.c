@@ -1,6 +1,6 @@
 /* general.c -- Stuff that is used by all files. */
 
-/* Copyright (C) 1987-2015 Free Software Foundation, Inc.
+/* Copyright (C) 1987-2016 Free Software Foundation, Inc.
 
    This file is part of GNU Bash, the Bourne Again SHell.
 
@@ -58,6 +58,7 @@ extern int check_hashed_filenames;
 extern int source_uses_path;
 extern int source_searches_cwd;
 extern int posixly_correct;
+extern int inherit_errexit;
 
 static char *bash_special_tilde_expansions __P((char *));
 static int unquoted_tilde_word __P((const char *));
@@ -75,6 +76,7 @@ posix_initialize (on)
   if (on != 0)
     {
       interactive_comments = source_uses_path = expand_aliases = 1;
+      inherit_errexit = 1;
       source_searches_cwd = 0;
     }
 
@@ -223,6 +225,57 @@ legal_identifier (name)
 	return (0);
     }
   return (1);
+}
+
+/* Return 1 if NAME is a valid value that can be assigned to a nameref
+   variable.  FLAGS can be 2, in which case the name is going to be used
+   to create a variable.  Other values are currently unused, but could
+   be used to allow values to be stored and indirectly referenced, but
+   not used in assignments. */
+int
+valid_nameref_value (name, flags)
+     char *name;
+     int flags;
+{
+  if (name == 0 || *name == 0)
+    return 0;
+
+  /* valid identifier */
+#if defined (ARRAY_VARS)  
+  if (legal_identifier (name) || (flags != 2 && valid_array_reference (name, 0)))
+#else
+  if (legal_identifier (name))
+#endif
+    return 1;
+
+  return 0;
+}
+
+int
+check_selfref (name, value, flags)
+     const char *name;
+     const char *value;
+     int flags;
+{
+  char *t;
+
+  if (STREQ (name, value))
+    return 1;
+
+#if defined (ARRAY_VARS)
+  if (valid_array_reference (value, 0))
+    {
+      t = array_variable_name (value, (int *)NULL, (int *)NULL);
+      if (t && STREQ (name, t))
+	{
+	  free (t);
+	  return 1;
+	}
+      free (t);
+    }
+#endif
+
+  return 0;	/* not a self reference */
 }
 
 /* Make sure that WORD is a valid shell identifier, i.e.
@@ -1037,6 +1090,7 @@ bash_tilde_expand (s, assign_p)
   int old_immed, old_term, r;
   char *ret;
 
+#if 0
   old_immed = interrupt_immediately;
   old_term = terminate_immediately;
   /* We want to be able to interrupt tilde expansion. Ordinarily, we can just
@@ -1046,6 +1100,7 @@ bash_tilde_expand (s, assign_p)
   if (any_signals_trapped () < 0)
     interrupt_immediately = 1;
   terminate_immediately = 1;
+#endif
 
   tilde_additional_prefixes = assign_p == 0 ? (char **)0
   					    : (assign_p == 2 ? bash_tilde_prefixes2 : bash_tilde_prefixes);
@@ -1055,8 +1110,10 @@ bash_tilde_expand (s, assign_p)
   r = (*s == '~') ? unquoted_tilde_word (s) : 1;
   ret = r ? tilde_expand (s) : savestring (s);
 
+#if 0
   interrupt_immediately = old_immed;
   terminate_immediately = old_term;
+#endif
 
   QUIT;
 

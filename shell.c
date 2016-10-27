@@ -38,7 +38,9 @@
 #include <signal.h>
 #include <errno.h>
 #include "filecntl.h"
-#include <pwd.h>
+#if defined (HAVE_PWD_H)
+#  include <pwd.h>
+#endif
 
 #if defined (HAVE_UNISTD_H)
 #  include <unistd.h>
@@ -57,6 +59,9 @@
 
 #if defined (JOB_CONTROL)
 #include "jobs.h"
+#else
+extern int initialize_job_control __P((int));
+extern int get_tty_state __P((void));
 #endif /* JOB_CONTROL */
 
 #include "input.h"
@@ -568,25 +573,45 @@ main (argc, argv, env)
   set_default_locale_vars ();
 
   /*
-   * M-x term -> TERM=eterm EMACS=22.1 (term:0.96)	(eterm)
-   * M-x shell -> TERM=dumb EMACS=t			(no line editing)
-   * M-x terminal -> TERM=emacs-em7955 EMACS=		(line editing)
+   * M-x term -> TERM=eterm-color INSIDE_EMACS='251,term:0.96' (eterm)
+   * M-x shell -> TERM='dumb' INSIDE_EMACS='25.1,comint' (no line editing)
+   *
+   * Older versions of Emacs may set EMACS to 't' or to something like
+   * '22.1 (term:0.96)' instead of (or in addition to) setting INSIDE_EMACS.
+   * They may set TERM to 'eterm' instead of 'eterm-color'.  They may have
+   * a now-obsolete command that sets neither EMACS nor INSIDE_EMACS:
+   * M-x terminal -> TERM='emacs-em7955' (line editing)
    */
   if (interactive_shell)
     {
-      char *term, *emacs;
+      char *term, *emacs, *inside_emacs;;
+      int emacs_term, in_emacs;
 
       term = get_string_value ("TERM");
       emacs = get_string_value ("EMACS");
+      inside_emacs = get_string_value ("INSIDE_EMACS");
+
+      if (inside_emacs)
+	{
+	  emacs_term = strstr (inside_emacs, ",term:") != 0;
+	  in_emacs = 1;
+	}
+      else if (emacs)
+	{
+	  /* Infer whether we are in an older Emacs. */
+	  emacs_term = strstr (emacs, " (term:") != 0;
+	  in_emacs = emacs_term || STREQ (emacs, "t");
+	}
+      else
+	in_emacs = emacs_term = 0;
 
       /* Not sure any emacs terminal emulator sets TERM=emacs any more */
       no_line_editing |= STREQ (term, "emacs");
-      no_line_editing |= emacs && emacs[0] == 't' && emacs[1] == '\0' && STREQ (term, "dumb");
-      no_line_editing |= get_string_value ("INSIDE_EMACS") != 0;
+      no_line_editing |= in_emacs && STREQ (term, "dumb");
 
       /* running_under_emacs == 2 for `eterm' */
-      running_under_emacs = (emacs != 0) || STREQN (term, "emacs", 5);
-      running_under_emacs += STREQN (term, "eterm", 5) && emacs && strstr (emacs, "term");
+      running_under_emacs = in_emacs || STREQN (term, "emacs", 5);
+      running_under_emacs += emacs_term && STREQN (term, "eterm", 5);
 
       if (running_under_emacs)
 	gnu_error_format = 1;
@@ -1430,11 +1455,13 @@ start_debugger ()
   r = force_execute_file (DEBUGGER_START_FILE, 1);
   if (r < 0)
     {
-      internal_warning ("cannot start debugger; debugging mode disabled");
-      debugging_mode = function_trace_mode = 0;
+      internal_warning (_("cannot start debugger; debugging mode disabled"));
+      debugging_mode = 0;
     }
-  else
-    function_trace_mode = 1;
+  error_trace_mode = function_trace_mode = debugging_mode;
+
+  set_shellopts ();
+  set_bashopts ();
 
   exit_immediately_on_error += old_errexit;
 #endif
@@ -1693,6 +1720,9 @@ init_interactive ()
 {
   expand_aliases = interactive_shell = startup_state = 1;
   interactive = 1;
+#if defined (HISTORY)
+  remember_on_history = enable_history_list = 1;	/* XXX */
+#endif
 }
 
 static void
@@ -1716,6 +1746,9 @@ init_interactive_script ()
 {
   init_noninteractive ();
   expand_aliases = interactive_shell = startup_state = 1;
+#if defined (HISTORY)
+  remember_on_history = enable_history_list = 1;	/* XXX */
+#endif
 }
 
 void
@@ -1746,7 +1779,9 @@ get_current_user_info ()
 	  current_user.shell = savestring ("/bin/sh");
 	  current_user.home_dir = savestring ("/");
 	}
+#if defined (HAVE_GETPWENT)
       endpwent ();
+#endif
     }
 }
 
@@ -1858,7 +1893,7 @@ shell_reinitialize ()
   /* XXX - should we set jobs_m_flag to 0 here? */
 
 #if defined (HISTORY)
-  bash_history_reinit (0);
+  bash_history_reinit (enable_history_list = 0);
 #endif /* HISTORY */
 
 #if defined (RESTRICTED_SHELL)

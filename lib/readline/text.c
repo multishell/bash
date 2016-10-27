@@ -1,6 +1,6 @@
 /* text.c -- text handling commands for readline. */
 
-/* Copyright (C) 1987-2010 Free Software Foundation, Inc.
+/* Copyright (C) 1987-2016 Free Software Foundation, Inc.
 
    This file is part of the GNU Readline Library (Readline), a library
    for reading lines of text with interactive input and history editing.      
@@ -572,7 +572,7 @@ rl_refresh_line (ignore1, ignore2)
 
   _rl_clear_to_eol (0);		/* arg of 0 means to not use spaces */
 
-  rl_forced_update_display ();
+  rl_redraw_prompt_last_line ();
   rl_display_fixed = 1;
 
   return 0;
@@ -931,6 +931,8 @@ rl_insert (count, c)
       /* setting rl_pending_input inhibits setting rl_last_func so we do it
 	 ourselves here */
       rl_last_func = rl_insert; 
+      _rl_reset_argument ();
+      rl_executing_keyseq[rl_key_sequence_length = 0] = '\0';
       r = rl_execute_next (n);
     }
 

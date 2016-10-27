@@ -114,6 +114,8 @@
 
 #if defined (JOB_CONTROL)
 #  include "jobs.h"
+#else
+extern int cleanup_dead_jobs __P((void));
 #endif /* JOB_CONTROL */
 
 #if defined (ALIAS)
@@ -170,6 +172,7 @@ extern char *dist_version;
 extern int patch_level;
 extern int dump_translatable_strings, dump_po_strings;
 extern sh_builtin_func_t *last_shell_builtin, *this_shell_builtin;
+extern int here_doc_first_line;
 #if defined (BUFFERED_INPUT)
 extern int bash_input_fd_changed;
 #endif
@@ -277,6 +280,9 @@ char *secondary_prompt = SPROMPT;
 /* PROMPT_STRING_POINTER points to one of these, never to an actual string. */
 char *ps1_prompt, *ps2_prompt;
 
+/* Displayed after reading a command but before executing it in an interactive shell */
+char *ps0_prompt;
+
 /* Handle on the current prompt string.  Indirectly points through
    ps1_ or ps2_prompt. */
 char **prompt_string_pointer = (char **)NULL;
@@ -368,7 +374,7 @@ static WORD_DESC *word_desc_to_read;
 static REDIRECTEE source;
 static REDIRECTEE redir;
 
-#line 372 "y.tab.c" /* yacc.c:339  */
+#line 378 "y.tab.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -506,7 +512,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 327 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:355  */
+#line 333 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:355  */
 
   WORD_DESC *word;		/* the word that we read. */
   int number;			/* the number that we read. */
@@ -516,7 +522,7 @@ union YYSTYPE
   ELEMENT element;
   PATTERN_LIST *pattern;
 
-#line 520 "y.tab.c" /* yacc.c:355  */
+#line 526 "y.tab.c" /* yacc.c:355  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -533,7 +539,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 537 "y.tab.c" /* yacc.c:358  */
+#line 543 "y.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -835,23 +841,23 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   380,   380,   391,   400,   415,   425,   427,   431,   437,
-     443,   449,   455,   461,   467,   473,   479,   485,   491,   497,
-     503,   509,   515,   521,   528,   535,   542,   549,   556,   563,
-     569,   575,   581,   587,   593,   599,   605,   611,   617,   623,
-     629,   635,   641,   647,   653,   659,   665,   671,   677,   683,
-     689,   695,   703,   705,   707,   711,   715,   726,   728,   732,
-     734,   736,   752,   754,   758,   760,   762,   764,   766,   768,
-     770,   772,   774,   776,   778,   782,   787,   792,   797,   802,
-     807,   812,   817,   824,   829,   834,   839,   846,   851,   856,
-     861,   866,   871,   878,   883,   888,   895,   898,   901,   905,
-     907,   938,   945,   950,   967,   972,   989,   996,   998,  1000,
-    1005,  1009,  1013,  1017,  1019,  1021,  1025,  1026,  1030,  1032,
-    1034,  1036,  1040,  1042,  1044,  1046,  1048,  1050,  1054,  1056,
-    1065,  1073,  1074,  1080,  1081,  1088,  1092,  1094,  1096,  1103,
-    1105,  1107,  1111,  1112,  1115,  1117,  1119,  1123,  1124,  1133,
-    1146,  1162,  1177,  1179,  1181,  1188,  1191,  1195,  1197,  1203,
-    1209,  1228,  1250,  1252,  1275,  1279,  1281,  1283
+       0,   386,   386,   397,   406,   421,   431,   433,   437,   443,
+     449,   455,   461,   467,   473,   479,   485,   491,   497,   503,
+     509,   515,   521,   527,   534,   541,   548,   555,   562,   569,
+     575,   581,   587,   593,   599,   605,   611,   617,   623,   629,
+     635,   641,   647,   653,   659,   665,   671,   677,   683,   689,
+     695,   701,   709,   711,   713,   717,   721,   732,   734,   738,
+     740,   742,   758,   760,   764,   766,   768,   770,   772,   774,
+     776,   778,   780,   782,   784,   788,   793,   798,   803,   808,
+     813,   818,   823,   830,   835,   840,   845,   852,   857,   862,
+     867,   872,   877,   884,   889,   894,   901,   904,   907,   911,
+     913,   944,   951,   956,   973,   978,   995,  1002,  1004,  1006,
+    1011,  1015,  1019,  1023,  1025,  1027,  1031,  1032,  1036,  1038,
+    1040,  1042,  1046,  1048,  1050,  1052,  1054,  1056,  1060,  1062,
+    1071,  1079,  1080,  1086,  1087,  1094,  1098,  1100,  1102,  1109,
+    1111,  1113,  1117,  1118,  1121,  1123,  1125,  1129,  1130,  1139,
+    1152,  1168,  1183,  1185,  1187,  1194,  1197,  1201,  1203,  1209,
+    1215,  1234,  1256,  1258,  1281,  1285,  1287,  1289
 };
 #endif
 
@@ -1904,7 +1910,7 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 381 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 387 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  /* Case of regular command.  Discard the error
 			     safety net,and return the command just parsed. */
@@ -1915,11 +1921,11 @@ yyreduce:
 			    parser_state |= PST_EOFTOKEN;
 			  YYACCEPT;
 			}
-#line 1919 "y.tab.c" /* yacc.c:1646  */
+#line 1925 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 3:
-#line 392 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 398 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  /* Case of regular command, but not a very
 			     interesting one.  Return a NULL command. */
@@ -1928,11 +1934,11 @@ yyreduce:
 			    parser_state |= PST_EOFTOKEN;
 			  YYACCEPT;
 			}
-#line 1932 "y.tab.c" /* yacc.c:1646  */
+#line 1938 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 4:
-#line 401 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 407 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  /* Error during parsing.  Return NULL command. */
 			  global_command = (COMMAND *)NULL;
@@ -1947,11 +1953,11 @@ yyreduce:
 			      YYABORT;
 			    }
 			}
-#line 1951 "y.tab.c" /* yacc.c:1646  */
+#line 1957 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 5:
-#line 416 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 422 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  /* Case of EOF seen by itself.  Do ignoreeof or
 			     not. */
@@ -1959,495 +1965,495 @@ yyreduce:
 			  handle_eof_input_unit ();
 			  YYACCEPT;
 			}
-#line 1963 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 6:
-#line 426 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.word_list) = make_word_list ((yyvsp[0].word), (WORD_LIST *)NULL); }
 #line 1969 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 7:
-#line 428 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.word_list) = make_word_list ((yyvsp[0].word), (yyvsp[-1].word_list)); }
+  case 6:
+#line 432 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.word_list) = make_word_list ((yyvsp[0].word), (WORD_LIST *)NULL); }
 #line 1975 "y.tab.c" /* yacc.c:1646  */
     break;
 
+  case 7:
+#line 434 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.word_list) = make_word_list ((yyvsp[0].word), (yyvsp[-1].word_list)); }
+#line 1981 "y.tab.c" /* yacc.c:1646  */
+    break;
+
   case 8:
-#line 432 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 438 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = 1;
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_output_direction, redir, 0);
 			}
-#line 1985 "y.tab.c" /* yacc.c:1646  */
+#line 1991 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 9:
-#line 438 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 444 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = 0;
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_input_direction, redir, 0);
 			}
-#line 1995 "y.tab.c" /* yacc.c:1646  */
+#line 2001 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 10:
-#line 444 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 450 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = (yyvsp[-2].number);
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_output_direction, redir, 0);
 			}
-#line 2005 "y.tab.c" /* yacc.c:1646  */
+#line 2011 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 11:
-#line 450 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 456 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = (yyvsp[-2].number);
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_input_direction, redir, 0);
 			}
-#line 2015 "y.tab.c" /* yacc.c:1646  */
+#line 2021 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 12:
-#line 456 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 462 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.filename = (yyvsp[-2].word);
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_output_direction, redir, REDIR_VARASSIGN);
 			}
-#line 2025 "y.tab.c" /* yacc.c:1646  */
+#line 2031 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 13:
-#line 462 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 468 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.filename = (yyvsp[-2].word);
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_input_direction, redir, REDIR_VARASSIGN);
 			}
-#line 2035 "y.tab.c" /* yacc.c:1646  */
+#line 2041 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 14:
-#line 468 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 474 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = 1;
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_appending_to, redir, 0);
 			}
-#line 2045 "y.tab.c" /* yacc.c:1646  */
+#line 2051 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 15:
-#line 474 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 480 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = (yyvsp[-2].number);
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_appending_to, redir, 0);
 			}
-#line 2055 "y.tab.c" /* yacc.c:1646  */
+#line 2061 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 16:
-#line 480 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 486 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.filename = (yyvsp[-2].word);
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_appending_to, redir, REDIR_VARASSIGN);
 			}
-#line 2065 "y.tab.c" /* yacc.c:1646  */
+#line 2071 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 17:
-#line 486 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 492 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = 1;
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_output_force, redir, 0);
 			}
-#line 2075 "y.tab.c" /* yacc.c:1646  */
+#line 2081 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 492 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 498 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = (yyvsp[-2].number);
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_output_force, redir, 0);
 			}
-#line 2085 "y.tab.c" /* yacc.c:1646  */
+#line 2091 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 19:
-#line 498 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 504 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.filename = (yyvsp[-2].word);
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_output_force, redir, REDIR_VARASSIGN);
 			}
-#line 2095 "y.tab.c" /* yacc.c:1646  */
+#line 2101 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 20:
-#line 504 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 510 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = 0;
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_input_output, redir, 0);
 			}
-#line 2105 "y.tab.c" /* yacc.c:1646  */
+#line 2111 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 510 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 516 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = (yyvsp[-2].number);
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_input_output, redir, 0);
 			}
-#line 2115 "y.tab.c" /* yacc.c:1646  */
+#line 2121 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 516 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 522 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.filename = (yyvsp[-2].word);
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_input_output, redir, REDIR_VARASSIGN);
 			}
-#line 2125 "y.tab.c" /* yacc.c:1646  */
+#line 2131 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 23:
-#line 522 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 528 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = 0;
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_reading_until, redir, 0);
 			  push_heredoc ((yyval.redirect));
 			}
-#line 2136 "y.tab.c" /* yacc.c:1646  */
+#line 2142 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 24:
-#line 529 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 535 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = (yyvsp[-2].number);
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_reading_until, redir, 0);
 			  push_heredoc ((yyval.redirect));
 			}
-#line 2147 "y.tab.c" /* yacc.c:1646  */
+#line 2153 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 25:
-#line 536 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 542 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.filename = (yyvsp[-2].word);
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_reading_until, redir, REDIR_VARASSIGN);
 			  push_heredoc ((yyval.redirect));
 			}
-#line 2158 "y.tab.c" /* yacc.c:1646  */
+#line 2164 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 543 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 549 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = 0;
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_deblank_reading_until, redir, 0);
 			  push_heredoc ((yyval.redirect));
 			}
-#line 2169 "y.tab.c" /* yacc.c:1646  */
+#line 2175 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 550 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 556 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = (yyvsp[-2].number);
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_deblank_reading_until, redir, 0);
 			  push_heredoc ((yyval.redirect));
 			}
-#line 2180 "y.tab.c" /* yacc.c:1646  */
+#line 2186 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 557 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 563 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.filename = (yyvsp[-2].word);
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_deblank_reading_until, redir, REDIR_VARASSIGN);
 			  push_heredoc ((yyval.redirect));
 			}
-#line 2191 "y.tab.c" /* yacc.c:1646  */
+#line 2197 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 29:
-#line 564 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 570 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = 0;
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_reading_string, redir, 0);
 			}
-#line 2201 "y.tab.c" /* yacc.c:1646  */
+#line 2207 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 30:
-#line 570 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 576 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = (yyvsp[-2].number);
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_reading_string, redir, 0);
 			}
-#line 2211 "y.tab.c" /* yacc.c:1646  */
+#line 2217 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 31:
-#line 576 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 582 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.filename = (yyvsp[-2].word);
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_reading_string, redir, REDIR_VARASSIGN);
 			}
-#line 2221 "y.tab.c" /* yacc.c:1646  */
+#line 2227 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 32:
-#line 582 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 588 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = 0;
 			  redir.dest = (yyvsp[0].number);
 			  (yyval.redirect) = make_redirection (source, r_duplicating_input, redir, 0);
 			}
-#line 2231 "y.tab.c" /* yacc.c:1646  */
+#line 2237 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 33:
-#line 588 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 594 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = (yyvsp[-2].number);
 			  redir.dest = (yyvsp[0].number);
 			  (yyval.redirect) = make_redirection (source, r_duplicating_input, redir, 0);
 			}
-#line 2241 "y.tab.c" /* yacc.c:1646  */
+#line 2247 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 34:
-#line 594 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 600 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.filename = (yyvsp[-2].word);
 			  redir.dest = (yyvsp[0].number);
 			  (yyval.redirect) = make_redirection (source, r_duplicating_input, redir, REDIR_VARASSIGN);
 			}
-#line 2251 "y.tab.c" /* yacc.c:1646  */
+#line 2257 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 35:
-#line 600 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 606 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = 1;
 			  redir.dest = (yyvsp[0].number);
 			  (yyval.redirect) = make_redirection (source, r_duplicating_output, redir, 0);
 			}
-#line 2261 "y.tab.c" /* yacc.c:1646  */
+#line 2267 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 36:
-#line 606 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 612 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = (yyvsp[-2].number);
 			  redir.dest = (yyvsp[0].number);
 			  (yyval.redirect) = make_redirection (source, r_duplicating_output, redir, 0);
 			}
-#line 2271 "y.tab.c" /* yacc.c:1646  */
+#line 2277 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 37:
-#line 612 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 618 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.filename = (yyvsp[-2].word);
 			  redir.dest = (yyvsp[0].number);
 			  (yyval.redirect) = make_redirection (source, r_duplicating_output, redir, REDIR_VARASSIGN);
 			}
-#line 2281 "y.tab.c" /* yacc.c:1646  */
+#line 2287 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 38:
-#line 618 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 624 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = 0;
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_duplicating_input_word, redir, 0);
 			}
-#line 2291 "y.tab.c" /* yacc.c:1646  */
+#line 2297 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 39:
-#line 624 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 630 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = (yyvsp[-2].number);
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_duplicating_input_word, redir, 0);
 			}
-#line 2301 "y.tab.c" /* yacc.c:1646  */
+#line 2307 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 40:
-#line 630 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 636 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.filename = (yyvsp[-2].word);
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_duplicating_input_word, redir, REDIR_VARASSIGN);
 			}
-#line 2311 "y.tab.c" /* yacc.c:1646  */
+#line 2317 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 41:
-#line 636 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 642 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = 1;
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_duplicating_output_word, redir, 0);
 			}
-#line 2321 "y.tab.c" /* yacc.c:1646  */
+#line 2327 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 42:
-#line 642 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 648 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = (yyvsp[-2].number);
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_duplicating_output_word, redir, 0);
 			}
-#line 2331 "y.tab.c" /* yacc.c:1646  */
+#line 2337 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 43:
-#line 648 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 654 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.filename = (yyvsp[-2].word);
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_duplicating_output_word, redir, REDIR_VARASSIGN);
 			}
-#line 2341 "y.tab.c" /* yacc.c:1646  */
+#line 2347 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 44:
-#line 654 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 660 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = 1;
 			  redir.dest = 0;
 			  (yyval.redirect) = make_redirection (source, r_close_this, redir, 0);
 			}
-#line 2351 "y.tab.c" /* yacc.c:1646  */
+#line 2357 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 45:
-#line 660 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 666 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = (yyvsp[-2].number);
 			  redir.dest = 0;
 			  (yyval.redirect) = make_redirection (source, r_close_this, redir, 0);
 			}
-#line 2361 "y.tab.c" /* yacc.c:1646  */
+#line 2367 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 46:
-#line 666 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 672 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.filename = (yyvsp[-2].word);
 			  redir.dest = 0;
 			  (yyval.redirect) = make_redirection (source, r_close_this, redir, REDIR_VARASSIGN);
 			}
-#line 2371 "y.tab.c" /* yacc.c:1646  */
+#line 2377 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 47:
-#line 672 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 678 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = 0;
 			  redir.dest = 0;
 			  (yyval.redirect) = make_redirection (source, r_close_this, redir, 0);
 			}
-#line 2381 "y.tab.c" /* yacc.c:1646  */
+#line 2387 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 48:
-#line 678 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 684 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = (yyvsp[-2].number);
 			  redir.dest = 0;
 			  (yyval.redirect) = make_redirection (source, r_close_this, redir, 0);
 			}
-#line 2391 "y.tab.c" /* yacc.c:1646  */
+#line 2397 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 49:
-#line 684 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 690 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.filename = (yyvsp[-2].word);
 			  redir.dest = 0;
 			  (yyval.redirect) = make_redirection (source, r_close_this, redir, REDIR_VARASSIGN);
 			}
-#line 2401 "y.tab.c" /* yacc.c:1646  */
+#line 2407 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 50:
-#line 690 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 696 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = 1;
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_err_and_out, redir, 0);
 			}
-#line 2411 "y.tab.c" /* yacc.c:1646  */
+#line 2417 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 51:
-#line 696 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 702 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  source.dest = 1;
 			  redir.filename = (yyvsp[0].word);
 			  (yyval.redirect) = make_redirection (source, r_append_err_and_out, redir, 0);
 			}
-#line 2421 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 52:
-#line 704 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.element).word = (yyvsp[0].word); (yyval.element).redirect = 0; }
 #line 2427 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 53:
-#line 706 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+  case 52:
+#line 710 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     { (yyval.element).word = (yyvsp[0].word); (yyval.element).redirect = 0; }
 #line 2433 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 54:
-#line 708 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.element).redirect = (yyvsp[0].redirect); (yyval.element).word = 0; }
+  case 53:
+#line 712 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.element).word = (yyvsp[0].word); (yyval.element).redirect = 0; }
 #line 2439 "y.tab.c" /* yacc.c:1646  */
     break;
 
+  case 54:
+#line 714 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.element).redirect = (yyvsp[0].redirect); (yyval.element).word = 0; }
+#line 2445 "y.tab.c" /* yacc.c:1646  */
+    break;
+
   case 55:
-#line 712 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 718 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.redirect) = (yyvsp[0].redirect);
 			}
-#line 2447 "y.tab.c" /* yacc.c:1646  */
+#line 2453 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 56:
-#line 716 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 722 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  register REDIRECT *t;
 
@@ -2456,35 +2462,35 @@ yyreduce:
 			  t->next = (yyvsp[0].redirect);
 			  (yyval.redirect) = (yyvsp[-1].redirect);
 			}
-#line 2460 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 57:
-#line 727 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = make_simple_command ((yyvsp[0].element), (COMMAND *)NULL); }
 #line 2466 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 58:
-#line 729 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = make_simple_command ((yyvsp[0].element), (yyvsp[-1].command)); }
+  case 57:
+#line 733 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = make_simple_command ((yyvsp[0].element), (COMMAND *)NULL); }
 #line 2472 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 59:
-#line 733 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = clean_simple_command ((yyvsp[0].command)); }
+  case 58:
+#line 735 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = make_simple_command ((yyvsp[0].element), (yyvsp[-1].command)); }
 #line 2478 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 60:
-#line 735 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = (yyvsp[0].command); }
+  case 59:
+#line 739 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = clean_simple_command ((yyvsp[0].command)); }
 #line 2484 "y.tab.c" /* yacc.c:1646  */
     break;
 
+  case 60:
+#line 741 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = (yyvsp[0].command); }
+#line 2490 "y.tab.c" /* yacc.c:1646  */
+    break;
+
   case 61:
-#line 737 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 743 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  COMMAND *tc;
 
@@ -2500,302 +2506,302 @@ yyreduce:
 			    tc->redirects = (yyvsp[0].redirect);
 			  (yyval.command) = (yyvsp[-1].command);
 			}
-#line 2504 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 62:
-#line 753 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = (yyvsp[0].command); }
 #line 2510 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 63:
-#line 755 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+  case 62:
+#line 759 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     { (yyval.command) = (yyvsp[0].command); }
 #line 2516 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 64:
-#line 759 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+  case 63:
+#line 761 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     { (yyval.command) = (yyvsp[0].command); }
 #line 2522 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 65:
-#line 761 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+  case 64:
+#line 765 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     { (yyval.command) = (yyvsp[0].command); }
 #line 2528 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 66:
-#line 763 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = make_while_command ((yyvsp[-3].command), (yyvsp[-1].command)); }
+  case 65:
+#line 767 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = (yyvsp[0].command); }
 #line 2534 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 67:
-#line 765 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = make_until_command ((yyvsp[-3].command), (yyvsp[-1].command)); }
+  case 66:
+#line 769 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = make_while_command ((yyvsp[-3].command), (yyvsp[-1].command)); }
 #line 2540 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 68:
-#line 767 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = (yyvsp[0].command); }
+  case 67:
+#line 771 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = make_until_command ((yyvsp[-3].command), (yyvsp[-1].command)); }
 #line 2546 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 69:
-#line 769 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+  case 68:
+#line 773 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     { (yyval.command) = (yyvsp[0].command); }
 #line 2552 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 70:
-#line 771 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+  case 69:
+#line 775 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     { (yyval.command) = (yyvsp[0].command); }
 #line 2558 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 71:
-#line 773 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+  case 70:
+#line 777 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     { (yyval.command) = (yyvsp[0].command); }
 #line 2564 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 72:
-#line 775 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+  case 71:
+#line 779 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     { (yyval.command) = (yyvsp[0].command); }
 #line 2570 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 73:
-#line 777 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+  case 72:
+#line 781 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     { (yyval.command) = (yyvsp[0].command); }
 #line 2576 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 74:
-#line 779 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+  case 73:
+#line 783 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     { (yyval.command) = (yyvsp[0].command); }
 #line 2582 "y.tab.c" /* yacc.c:1646  */
     break;
 
+  case 74:
+#line 785 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = (yyvsp[0].command); }
+#line 2588 "y.tab.c" /* yacc.c:1646  */
+    break;
+
   case 75:
-#line 783 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 789 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = make_for_command ((yyvsp[-4].word), add_string_to_list ("\"$@\"", (WORD_LIST *)NULL), (yyvsp[-1].command), word_lineno[word_top]);
 			  if (word_top > 0) word_top--;
 			}
-#line 2591 "y.tab.c" /* yacc.c:1646  */
+#line 2597 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 76:
-#line 788 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 794 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = make_for_command ((yyvsp[-4].word), add_string_to_list ("\"$@\"", (WORD_LIST *)NULL), (yyvsp[-1].command), word_lineno[word_top]);
 			  if (word_top > 0) word_top--;
 			}
-#line 2600 "y.tab.c" /* yacc.c:1646  */
+#line 2606 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 77:
-#line 793 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 799 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = make_for_command ((yyvsp[-5].word), add_string_to_list ("\"$@\"", (WORD_LIST *)NULL), (yyvsp[-1].command), word_lineno[word_top]);
 			  if (word_top > 0) word_top--;
 			}
-#line 2609 "y.tab.c" /* yacc.c:1646  */
+#line 2615 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 78:
-#line 798 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 804 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = make_for_command ((yyvsp[-5].word), add_string_to_list ("\"$@\"", (WORD_LIST *)NULL), (yyvsp[-1].command), word_lineno[word_top]);
 			  if (word_top > 0) word_top--;
 			}
-#line 2618 "y.tab.c" /* yacc.c:1646  */
+#line 2624 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 79:
-#line 803 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 809 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = make_for_command ((yyvsp[-8].word), REVERSE_LIST ((yyvsp[-5].word_list), WORD_LIST *), (yyvsp[-1].command), word_lineno[word_top]);
 			  if (word_top > 0) word_top--;
 			}
-#line 2627 "y.tab.c" /* yacc.c:1646  */
+#line 2633 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 80:
-#line 808 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 814 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = make_for_command ((yyvsp[-8].word), REVERSE_LIST ((yyvsp[-5].word_list), WORD_LIST *), (yyvsp[-1].command), word_lineno[word_top]);
 			  if (word_top > 0) word_top--;
 			}
-#line 2636 "y.tab.c" /* yacc.c:1646  */
+#line 2642 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 81:
-#line 813 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 819 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = make_for_command ((yyvsp[-7].word), (WORD_LIST *)NULL, (yyvsp[-1].command), word_lineno[word_top]);
 			  if (word_top > 0) word_top--;
 			}
-#line 2645 "y.tab.c" /* yacc.c:1646  */
+#line 2651 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 82:
-#line 818 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 824 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = make_for_command ((yyvsp[-7].word), (WORD_LIST *)NULL, (yyvsp[-1].command), word_lineno[word_top]);
 			  if (word_top > 0) word_top--;
 			}
-#line 2654 "y.tab.c" /* yacc.c:1646  */
+#line 2660 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 83:
-#line 825 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 831 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 				  (yyval.command) = make_arith_for_command ((yyvsp[-5].word_list), (yyvsp[-1].command), arith_for_lineno);
 				  if (word_top > 0) word_top--;
 				}
-#line 2663 "y.tab.c" /* yacc.c:1646  */
+#line 2669 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 84:
-#line 830 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 836 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 				  (yyval.command) = make_arith_for_command ((yyvsp[-5].word_list), (yyvsp[-1].command), arith_for_lineno);
 				  if (word_top > 0) word_top--;
 				}
-#line 2672 "y.tab.c" /* yacc.c:1646  */
+#line 2678 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 85:
-#line 835 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 841 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 				  (yyval.command) = make_arith_for_command ((yyvsp[-3].word_list), (yyvsp[-1].command), arith_for_lineno);
 				  if (word_top > 0) word_top--;
 				}
-#line 2681 "y.tab.c" /* yacc.c:1646  */
+#line 2687 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 86:
-#line 840 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 846 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 				  (yyval.command) = make_arith_for_command ((yyvsp[-3].word_list), (yyvsp[-1].command), arith_for_lineno);
 				  if (word_top > 0) word_top--;
 				}
-#line 2690 "y.tab.c" /* yacc.c:1646  */
+#line 2696 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 87:
-#line 847 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 853 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = make_select_command ((yyvsp[-4].word), add_string_to_list ("\"$@\"", (WORD_LIST *)NULL), (yyvsp[-1].command), word_lineno[word_top]);
 			  if (word_top > 0) word_top--;
 			}
-#line 2699 "y.tab.c" /* yacc.c:1646  */
+#line 2705 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 88:
-#line 852 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 858 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = make_select_command ((yyvsp[-4].word), add_string_to_list ("\"$@\"", (WORD_LIST *)NULL), (yyvsp[-1].command), word_lineno[word_top]);
 			  if (word_top > 0) word_top--;
 			}
-#line 2708 "y.tab.c" /* yacc.c:1646  */
+#line 2714 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 89:
-#line 857 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 863 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = make_select_command ((yyvsp[-5].word), add_string_to_list ("\"$@\"", (WORD_LIST *)NULL), (yyvsp[-1].command), word_lineno[word_top]);
 			  if (word_top > 0) word_top--;
 			}
-#line 2717 "y.tab.c" /* yacc.c:1646  */
+#line 2723 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 90:
-#line 862 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 868 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = make_select_command ((yyvsp[-5].word), add_string_to_list ("\"$@\"", (WORD_LIST *)NULL), (yyvsp[-1].command), word_lineno[word_top]);
 			  if (word_top > 0) word_top--;
 			}
-#line 2726 "y.tab.c" /* yacc.c:1646  */
+#line 2732 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 91:
-#line 867 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 873 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = make_select_command ((yyvsp[-8].word), REVERSE_LIST ((yyvsp[-5].word_list), WORD_LIST *), (yyvsp[-1].command), word_lineno[word_top]);
 			  if (word_top > 0) word_top--;
 			}
-#line 2735 "y.tab.c" /* yacc.c:1646  */
+#line 2741 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 92:
-#line 872 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 878 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = make_select_command ((yyvsp[-8].word), REVERSE_LIST ((yyvsp[-5].word_list), WORD_LIST *), (yyvsp[-1].command), word_lineno[word_top]);
 			  if (word_top > 0) word_top--;
 			}
-#line 2744 "y.tab.c" /* yacc.c:1646  */
+#line 2750 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 93:
-#line 879 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 885 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = make_case_command ((yyvsp[-4].word), (PATTERN_LIST *)NULL, word_lineno[word_top]);
 			  if (word_top > 0) word_top--;
 			}
-#line 2753 "y.tab.c" /* yacc.c:1646  */
+#line 2759 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 94:
-#line 884 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 890 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = make_case_command ((yyvsp[-5].word), (yyvsp[-2].pattern), word_lineno[word_top]);
 			  if (word_top > 0) word_top--;
 			}
-#line 2762 "y.tab.c" /* yacc.c:1646  */
+#line 2768 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 95:
-#line 889 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 895 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = make_case_command ((yyvsp[-4].word), (yyvsp[-1].pattern), word_lineno[word_top]);
 			  if (word_top > 0) word_top--;
 			}
-#line 2771 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 96:
-#line 896 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = make_function_def ((yyvsp[-4].word), (yyvsp[0].command), function_dstart, function_bstart); }
 #line 2777 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 97:
-#line 899 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+  case 96:
+#line 902 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     { (yyval.command) = make_function_def ((yyvsp[-4].word), (yyvsp[0].command), function_dstart, function_bstart); }
 #line 2783 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 98:
-#line 902 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = make_function_def ((yyvsp[-2].word), (yyvsp[0].command), function_dstart, function_bstart); }
+  case 97:
+#line 905 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = make_function_def ((yyvsp[-4].word), (yyvsp[0].command), function_dstart, function_bstart); }
 #line 2789 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 99:
-#line 906 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = (yyvsp[0].command); }
+  case 98:
+#line 908 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = make_function_def ((yyvsp[-2].word), (yyvsp[0].command), function_dstart, function_bstart); }
 #line 2795 "y.tab.c" /* yacc.c:1646  */
     break;
 
+  case 99:
+#line 912 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = (yyvsp[0].command); }
+#line 2801 "y.tab.c" /* yacc.c:1646  */
+    break;
+
   case 100:
-#line 908 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 914 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  COMMAND *tc;
 
@@ -2824,29 +2830,29 @@ yyreduce:
 			    tc->redirects = (yyvsp[0].redirect);
 			  (yyval.command) = (yyvsp[-1].command);
 			}
-#line 2828 "y.tab.c" /* yacc.c:1646  */
+#line 2834 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 101:
-#line 939 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 945 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = make_subshell_command ((yyvsp[-1].command));
 			  (yyval.command)->flags |= CMD_WANT_SUBSHELL;
 			}
-#line 2837 "y.tab.c" /* yacc.c:1646  */
+#line 2843 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 102:
-#line 946 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 952 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = make_coproc_command ("COPROC", (yyvsp[0].command));
 			  (yyval.command)->flags |= CMD_WANT_SUBSHELL|CMD_COPROC_SUBSHELL;
 			}
-#line 2846 "y.tab.c" /* yacc.c:1646  */
+#line 2852 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 103:
-#line 951 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 957 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  COMMAND *tc;
 
@@ -2863,20 +2869,20 @@ yyreduce:
 			  (yyval.command) = make_coproc_command ("COPROC", (yyvsp[-1].command));
 			  (yyval.command)->flags |= CMD_WANT_SUBSHELL|CMD_COPROC_SUBSHELL;
 			}
-#line 2867 "y.tab.c" /* yacc.c:1646  */
+#line 2873 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 104:
-#line 968 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 974 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = make_coproc_command ((yyvsp[-1].word)->word, (yyvsp[0].command));
 			  (yyval.command)->flags |= CMD_WANT_SUBSHELL|CMD_COPROC_SUBSHELL;
 			}
-#line 2876 "y.tab.c" /* yacc.c:1646  */
+#line 2882 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 105:
-#line 973 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 979 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  COMMAND *tc;
 
@@ -2893,240 +2899,240 @@ yyreduce:
 			  (yyval.command) = make_coproc_command ((yyvsp[-2].word)->word, (yyvsp[-1].command));
 			  (yyval.command)->flags |= CMD_WANT_SUBSHELL|CMD_COPROC_SUBSHELL;
 			}
-#line 2897 "y.tab.c" /* yacc.c:1646  */
+#line 2903 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 106:
-#line 990 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 996 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = make_coproc_command ("COPROC", clean_simple_command ((yyvsp[0].command)));
 			  (yyval.command)->flags |= CMD_WANT_SUBSHELL|CMD_COPROC_SUBSHELL;
 			}
-#line 2906 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 107:
-#line 997 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = make_if_command ((yyvsp[-3].command), (yyvsp[-1].command), (COMMAND *)NULL); }
 #line 2912 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 108:
-#line 999 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = make_if_command ((yyvsp[-5].command), (yyvsp[-3].command), (yyvsp[-1].command)); }
+  case 107:
+#line 1003 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = make_if_command ((yyvsp[-3].command), (yyvsp[-1].command), (COMMAND *)NULL); }
 #line 2918 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 109:
-#line 1001 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = make_if_command ((yyvsp[-4].command), (yyvsp[-2].command), (yyvsp[-1].command)); }
+  case 108:
+#line 1005 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = make_if_command ((yyvsp[-5].command), (yyvsp[-3].command), (yyvsp[-1].command)); }
 #line 2924 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 110:
-#line 1006 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = make_group_command ((yyvsp[-1].command)); }
+  case 109:
+#line 1007 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = make_if_command ((yyvsp[-4].command), (yyvsp[-2].command), (yyvsp[-1].command)); }
 #line 2930 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 111:
-#line 1010 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = make_arith_command ((yyvsp[0].word_list)); }
+  case 110:
+#line 1012 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = make_group_command ((yyvsp[-1].command)); }
 #line 2936 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 112:
-#line 1014 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = (yyvsp[-1].command); }
+  case 111:
+#line 1016 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = make_arith_command ((yyvsp[0].word_list)); }
 #line 2942 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 113:
-#line 1018 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = make_if_command ((yyvsp[-2].command), (yyvsp[0].command), (COMMAND *)NULL); }
+  case 112:
+#line 1020 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = (yyvsp[-1].command); }
 #line 2948 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 114:
-#line 1020 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = make_if_command ((yyvsp[-4].command), (yyvsp[-2].command), (yyvsp[0].command)); }
+  case 113:
+#line 1024 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = make_if_command ((yyvsp[-2].command), (yyvsp[0].command), (COMMAND *)NULL); }
 #line 2954 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 115:
-#line 1022 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = make_if_command ((yyvsp[-3].command), (yyvsp[-1].command), (yyvsp[0].command)); }
+  case 114:
+#line 1026 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = make_if_command ((yyvsp[-4].command), (yyvsp[-2].command), (yyvsp[0].command)); }
 #line 2960 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 117:
-#line 1027 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyvsp[0].pattern)->next = (yyvsp[-1].pattern); (yyval.pattern) = (yyvsp[0].pattern); }
+  case 115:
+#line 1028 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = make_if_command ((yyvsp[-3].command), (yyvsp[-1].command), (yyvsp[0].command)); }
 #line 2966 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 118:
-#line 1031 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.pattern) = make_pattern_list ((yyvsp[-2].word_list), (yyvsp[0].command)); }
+  case 117:
+#line 1033 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyvsp[0].pattern)->next = (yyvsp[-1].pattern); (yyval.pattern) = (yyvsp[0].pattern); }
 #line 2972 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 119:
-#line 1033 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.pattern) = make_pattern_list ((yyvsp[-2].word_list), (COMMAND *)NULL); }
+  case 118:
+#line 1037 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.pattern) = make_pattern_list ((yyvsp[-2].word_list), (yyvsp[0].command)); }
 #line 2978 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 120:
-#line 1035 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.pattern) = make_pattern_list ((yyvsp[-2].word_list), (yyvsp[0].command)); }
+  case 119:
+#line 1039 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.pattern) = make_pattern_list ((yyvsp[-2].word_list), (COMMAND *)NULL); }
 #line 2984 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 121:
-#line 1037 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.pattern) = make_pattern_list ((yyvsp[-2].word_list), (COMMAND *)NULL); }
+  case 120:
+#line 1041 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.pattern) = make_pattern_list ((yyvsp[-2].word_list), (yyvsp[0].command)); }
 #line 2990 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 122:
-#line 1041 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.pattern) = (yyvsp[-1].pattern); }
+  case 121:
+#line 1043 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.pattern) = make_pattern_list ((yyvsp[-2].word_list), (COMMAND *)NULL); }
 #line 2996 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 123:
-#line 1043 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyvsp[-1].pattern)->next = (yyvsp[-2].pattern); (yyval.pattern) = (yyvsp[-1].pattern); }
+  case 122:
+#line 1047 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.pattern) = (yyvsp[-1].pattern); }
 #line 3002 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 124:
-#line 1045 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyvsp[-1].pattern)->flags |= CASEPAT_FALLTHROUGH; (yyval.pattern) = (yyvsp[-1].pattern); }
+  case 123:
+#line 1049 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyvsp[-1].pattern)->next = (yyvsp[-2].pattern); (yyval.pattern) = (yyvsp[-1].pattern); }
 #line 3008 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 125:
-#line 1047 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyvsp[-1].pattern)->flags |= CASEPAT_FALLTHROUGH; (yyvsp[-1].pattern)->next = (yyvsp[-2].pattern); (yyval.pattern) = (yyvsp[-1].pattern); }
+  case 124:
+#line 1051 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyvsp[-1].pattern)->flags |= CASEPAT_FALLTHROUGH; (yyval.pattern) = (yyvsp[-1].pattern); }
 #line 3014 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 126:
-#line 1049 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyvsp[-1].pattern)->flags |= CASEPAT_TESTNEXT; (yyval.pattern) = (yyvsp[-1].pattern); }
+  case 125:
+#line 1053 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyvsp[-1].pattern)->flags |= CASEPAT_FALLTHROUGH; (yyvsp[-1].pattern)->next = (yyvsp[-2].pattern); (yyval.pattern) = (yyvsp[-1].pattern); }
 #line 3020 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 127:
-#line 1051 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyvsp[-1].pattern)->flags |= CASEPAT_TESTNEXT; (yyvsp[-1].pattern)->next = (yyvsp[-2].pattern); (yyval.pattern) = (yyvsp[-1].pattern); }
+  case 126:
+#line 1055 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyvsp[-1].pattern)->flags |= CASEPAT_TESTNEXT; (yyval.pattern) = (yyvsp[-1].pattern); }
 #line 3026 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 128:
-#line 1055 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.word_list) = make_word_list ((yyvsp[0].word), (WORD_LIST *)NULL); }
+  case 127:
+#line 1057 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyvsp[-1].pattern)->flags |= CASEPAT_TESTNEXT; (yyvsp[-1].pattern)->next = (yyvsp[-2].pattern); (yyval.pattern) = (yyvsp[-1].pattern); }
 #line 3032 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 129:
-#line 1057 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.word_list) = make_word_list ((yyvsp[0].word), (yyvsp[-2].word_list)); }
+  case 128:
+#line 1061 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.word_list) = make_word_list ((yyvsp[0].word), (WORD_LIST *)NULL); }
 #line 3038 "y.tab.c" /* yacc.c:1646  */
     break;
 
+  case 129:
+#line 1063 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.word_list) = make_word_list ((yyvsp[0].word), (yyvsp[-2].word_list)); }
+#line 3044 "y.tab.c" /* yacc.c:1646  */
+    break;
+
   case 130:
-#line 1066 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 1072 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = (yyvsp[0].command);
 			  if (need_here_doc)
 			    gather_here_documents ();
 			 }
-#line 3048 "y.tab.c" /* yacc.c:1646  */
+#line 3054 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 132:
-#line 1075 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 1081 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = (yyvsp[0].command);
 			}
-#line 3056 "y.tab.c" /* yacc.c:1646  */
+#line 3062 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 134:
-#line 1082 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 1088 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  if ((yyvsp[-2].command)->type == cm_connection)
 			    (yyval.command) = connect_async_list ((yyvsp[-2].command), (COMMAND *)NULL, '&');
 			  else
 			    (yyval.command) = command_connect ((yyvsp[-2].command), (COMMAND *)NULL, '&');
 			}
-#line 3067 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 136:
-#line 1093 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = command_connect ((yyvsp[-3].command), (yyvsp[0].command), AND_AND); }
 #line 3073 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 137:
-#line 1095 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = command_connect ((yyvsp[-3].command), (yyvsp[0].command), OR_OR); }
+  case 136:
+#line 1099 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = command_connect ((yyvsp[-3].command), (yyvsp[0].command), AND_AND); }
 #line 3079 "y.tab.c" /* yacc.c:1646  */
     break;
 
+  case 137:
+#line 1101 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = command_connect ((yyvsp[-3].command), (yyvsp[0].command), OR_OR); }
+#line 3085 "y.tab.c" /* yacc.c:1646  */
+    break;
+
   case 138:
-#line 1097 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 1103 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  if ((yyvsp[-3].command)->type == cm_connection)
 			    (yyval.command) = connect_async_list ((yyvsp[-3].command), (yyvsp[0].command), '&');
 			  else
 			    (yyval.command) = command_connect ((yyvsp[-3].command), (yyvsp[0].command), '&');
 			}
-#line 3090 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 139:
-#line 1104 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = command_connect ((yyvsp[-3].command), (yyvsp[0].command), ';'); }
 #line 3096 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 140:
-#line 1106 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+  case 139:
+#line 1110 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     { (yyval.command) = command_connect ((yyvsp[-3].command), (yyvsp[0].command), ';'); }
 #line 3102 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 141:
-#line 1108 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = (yyvsp[0].command); }
+  case 140:
+#line 1112 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = command_connect ((yyvsp[-3].command), (yyvsp[0].command), ';'); }
 #line 3108 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 144:
-#line 1116 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.number) = '\n'; }
+  case 141:
+#line 1114 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = (yyvsp[0].command); }
 #line 3114 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 145:
-#line 1118 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.number) = ';'; }
+  case 144:
+#line 1122 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.number) = '\n'; }
 #line 3120 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 146:
-#line 1120 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.number) = yacc_EOF; }
+  case 145:
+#line 1124 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.number) = ';'; }
 #line 3126 "y.tab.c" /* yacc.c:1646  */
     break;
 
+  case 146:
+#line 1126 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.number) = yacc_EOF; }
+#line 3132 "y.tab.c" /* yacc.c:1646  */
+    break;
+
   case 149:
-#line 1134 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 1140 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = (yyvsp[0].command);
 			  if (need_here_doc)
@@ -3139,11 +3145,11 @@ yyreduce:
 			      YYACCEPT;
 			    }
 			}
-#line 3143 "y.tab.c" /* yacc.c:1646  */
+#line 3149 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 150:
-#line 1147 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 1153 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  if ((yyvsp[-1].command)->type == cm_connection)
 			    (yyval.command) = connect_async_list ((yyvsp[-1].command), (COMMAND *)NULL, '&');
@@ -3159,11 +3165,11 @@ yyreduce:
 			      YYACCEPT;
 			    }
 			}
-#line 3163 "y.tab.c" /* yacc.c:1646  */
+#line 3169 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 151:
-#line 1163 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 1169 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  (yyval.command) = (yyvsp[-1].command);
 			  if (need_here_doc)
@@ -3176,72 +3182,72 @@ yyreduce:
 			      YYACCEPT;
 			    }
 			}
-#line 3180 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 152:
-#line 1178 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = command_connect ((yyvsp[-3].command), (yyvsp[0].command), AND_AND); }
 #line 3186 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 153:
-#line 1180 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = command_connect ((yyvsp[-3].command), (yyvsp[0].command), OR_OR); }
+  case 152:
+#line 1184 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = command_connect ((yyvsp[-3].command), (yyvsp[0].command), AND_AND); }
 #line 3192 "y.tab.c" /* yacc.c:1646  */
     break;
 
+  case 153:
+#line 1186 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = command_connect ((yyvsp[-3].command), (yyvsp[0].command), OR_OR); }
+#line 3198 "y.tab.c" /* yacc.c:1646  */
+    break;
+
   case 154:
-#line 1182 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 1188 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  if ((yyvsp[-2].command)->type == cm_connection)
 			    (yyval.command) = connect_async_list ((yyvsp[-2].command), (yyvsp[0].command), '&');
 			  else
 			    (yyval.command) = command_connect ((yyvsp[-2].command), (yyvsp[0].command), '&');
 			}
-#line 3203 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 155:
-#line 1189 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = command_connect ((yyvsp[-2].command), (yyvsp[0].command), ';'); }
 #line 3209 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 156:
-#line 1192 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = (yyvsp[0].command); }
+  case 155:
+#line 1195 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = command_connect ((yyvsp[-2].command), (yyvsp[0].command), ';'); }
 #line 3215 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 157:
-#line 1196 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+  case 156:
+#line 1198 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     { (yyval.command) = (yyvsp[0].command); }
 #line 3221 "y.tab.c" /* yacc.c:1646  */
     break;
 
+  case 157:
+#line 1202 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = (yyvsp[0].command); }
+#line 3227 "y.tab.c" /* yacc.c:1646  */
+    break;
+
   case 158:
-#line 1198 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 1204 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  if ((yyvsp[0].command))
 			    (yyvsp[0].command)->flags ^= CMD_INVERT_RETURN;	/* toggle */
 			  (yyval.command) = (yyvsp[0].command);
 			}
-#line 3231 "y.tab.c" /* yacc.c:1646  */
+#line 3237 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 159:
-#line 1204 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 1210 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  if ((yyvsp[0].command))
 			    (yyvsp[0].command)->flags |= (yyvsp[-1].number);
 			  (yyval.command) = (yyvsp[0].command);
 			}
-#line 3241 "y.tab.c" /* yacc.c:1646  */
+#line 3247 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 160:
-#line 1210 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 1216 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  ELEMENT x;
 
@@ -3260,11 +3266,11 @@ yyreduce:
 			  else if ((yyvsp[0].number) == ';')
 			    token_to_read = ';';
 			}
-#line 3264 "y.tab.c" /* yacc.c:1646  */
+#line 3270 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 161:
-#line 1229 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 1235 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  ELEMENT x;
 
@@ -3284,17 +3290,17 @@ yyreduce:
 			  if ((yyvsp[0].number) == ';')
 			    token_to_read = ';';
 			}
-#line 3288 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 162:
-#line 1251 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = command_connect ((yyvsp[-3].command), (yyvsp[0].command), '|'); }
 #line 3294 "y.tab.c" /* yacc.c:1646  */
     break;
 
+  case 162:
+#line 1257 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = command_connect ((yyvsp[-3].command), (yyvsp[0].command), '|'); }
+#line 3300 "y.tab.c" /* yacc.c:1646  */
+    break;
+
   case 163:
-#line 1253 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+#line 1259 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     {
 			  /* Make cmd1 |& cmd2 equivalent to cmd1 2>&1 | cmd2 */
 			  COMMAND *tc;
@@ -3317,35 +3323,35 @@ yyreduce:
 
 			  (yyval.command) = command_connect ((yyvsp[-3].command), (yyvsp[0].command), '|');
 			}
-#line 3321 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 164:
-#line 1276 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.command) = (yyvsp[0].command); }
 #line 3327 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 165:
-#line 1280 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.number) = CMD_TIME_PIPELINE; }
+  case 164:
+#line 1282 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.command) = (yyvsp[0].command); }
 #line 3333 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 166:
-#line 1282 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
-    { (yyval.number) = CMD_TIME_PIPELINE|CMD_TIME_POSIX; }
+  case 165:
+#line 1286 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.number) = CMD_TIME_PIPELINE; }
 #line 3339 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 167:
-#line 1284 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+  case 166:
+#line 1288 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
     { (yyval.number) = CMD_TIME_PIPELINE|CMD_TIME_POSIX; }
 #line 3345 "y.tab.c" /* yacc.c:1646  */
     break;
 
+  case 167:
+#line 1290 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1646  */
+    { (yyval.number) = CMD_TIME_PIPELINE|CMD_TIME_POSIX; }
+#line 3351 "y.tab.c" /* yacc.c:1646  */
+    break;
 
-#line 3349 "y.tab.c" /* yacc.c:1646  */
+
+#line 3355 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -3573,7 +3579,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 1286 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1906  */
+#line 1292 "/usr/homes/chet/src/bash/src/parse.y" /* yacc.c:1906  */
 
 
 /* Initial size to allocate for tokens, and the
@@ -4246,6 +4252,13 @@ parser_restore_alias ()
 #endif
 }
 
+void
+clear_shell_input_line ()
+{
+  if (shell_input_line)
+    shell_input_line[shell_input_line_index = 0] = '\0';
+}
+
 /* Return a line of text, taken from wherever yylex () reads input.
    If there is no more input, then we return NULL.  If REMOVE_QUOTED_NEWLINE
    is non-zero, we remove unquoted \<newline> pairs.  This is used by
@@ -4599,7 +4612,7 @@ shell_getc (remove_quoted_newline)
 	      if (n <= 2)	/* we have to save 1 for the newline added below */
 		{
 		  if (truncating == 0)
-		    internal_warning("shell_getc: shell_input_line_size (%zu) exceeds SIZE_MAX (%llu): line truncated", shell_input_line_size, SIZE_MAX);
+		    internal_warning(_("shell_getc: shell_input_line_size (%zu) exceeds SIZE_MAX (%lu): line truncated"), shell_input_line_size, (unsigned long)SIZE_MAX);
 		  shell_input_line[i] = '\0';
 		  truncating = 1;
 		}
@@ -4656,6 +4669,8 @@ shell_getc (remove_quoted_newline)
 	  if (current_delimiter (dstack) == '\'')
 	    history_expansion_inhibited = 1;
 #  endif
+	  /* Calling with a third argument of 1 allows remember_on_history to
+	     determine whether or not the line is saved to the history list */
 	  expansions = pre_process_line (shell_input_line, 1, 1);
 #  if defined (BANG_HISTORY)
 	  history_expansion_inhibited = old_hist;
@@ -4986,6 +5001,7 @@ gather_here_documents ()
   int r;
 
   r = 0;
+  here_doc_first_line = 1;
   while (need_here_doc > 0)
     {
       parser_state |= PST_HEREDOC;
@@ -4994,6 +5010,7 @@ gather_here_documents ()
       need_here_doc--;
       redir_stack[r - 1] = 0;		/* XXX */
     }
+  here_doc_first_line = 0;		/* just in case */
 }
 
 /* When non-zero, an open-brace used to create a group is awaiting a close
@@ -5309,12 +5326,14 @@ reset_parser ()
 #endif
 
   parser_state = 0;
+  here_doc_first_line = 0;
 
 #if defined (ALIAS) || defined (DPAREN_ARITHMETIC)
   if (pushed_string_list)
     free_string_list ();
 #endif /* ALIAS || DPAREN_ARITHMETIC */
 
+  /* This is where we resynchronize to the next newline on error/reset */
   if (shell_input_line)
     {
       free (shell_input_line);
@@ -5598,7 +5617,8 @@ tokword:
 #define LEX_INHEREDOC	0x080
 #define LEX_HEREDELIM	0x100		/* reading here-doc delimiter */
 #define LEX_STRIPDOC	0x200		/* <<- strip tabs from here doc delim */
-#define LEX_INWORD	0x400
+#define LEX_QUOTEDDOC	0x400		/* here doc with quoted delim */
+#define LEX_INWORD	0x800
 
 #define COMSUB_META(ch)		((ch) == ';' || (ch) == '&' || (ch) == '|')
 
@@ -5890,6 +5910,81 @@ parse_dollar_word:
   return ret;
 }
 
+#if defined (DEBUG)
+static void
+dump_tflags (flags)
+     int flags;
+{
+  int f;
+
+  f = flags;
+  fprintf (stderr, "%d -> ", f);
+  if (f & LEX_WASDOL)
+    {
+      f &= ~LEX_WASDOL;
+      fprintf (stderr, "LEX_WASDOL%s", f ? "|" : "");
+    }
+  if (f & LEX_CKCOMMENT)
+    {
+      f &= ~LEX_CKCOMMENT;
+      fprintf (stderr, "LEX_CKCOMMENT%s", f ? "|" : "");
+    }
+  if (f & LEX_INCOMMENT)
+    {
+      f &= ~LEX_INCOMMENT;
+      fprintf (stderr, "LEX_INCOMMENT%s", f ? "|" : "");
+    }
+  if (f & LEX_PASSNEXT)
+    {
+      f &= ~LEX_PASSNEXT;
+      fprintf (stderr, "LEX_PASSNEXT%s", f ? "|" : "");
+    }
+  if (f & LEX_RESWDOK)
+    {
+      f &= ~LEX_RESWDOK;
+      fprintf (stderr, "LEX_RESWDOK%s", f ? "|" : "");
+    }
+  if (f & LEX_CKCASE)
+    {
+      f &= ~LEX_CKCASE;
+      fprintf (stderr, "LEX_CKCASE%s", f ? "|" : "");
+    }
+  if (f & LEX_INCASE)
+    {
+      f &= ~LEX_INCASE;
+      fprintf (stderr, "LEX_INCASE%s", f ? "|" : "");
+    }
+  if (f & LEX_INHEREDOC)
+    {
+      f &= ~LEX_INHEREDOC;
+      fprintf (stderr, "LEX_INHEREDOC%s", f ? "|" : "");
+    }
+  if (f & LEX_HEREDELIM)
+    {
+      f &= ~LEX_HEREDELIM;
+      fprintf (stderr, "LEX_HEREDELIM%s", f ? "|" : "");
+    }
+  if (f & LEX_STRIPDOC)
+    {
+      f &= ~LEX_STRIPDOC;
+      fprintf (stderr, "LEX_WASDOL%s", f ? "|" : "");
+    }
+  if (f & LEX_QUOTEDDOC)
+    {
+      f &= ~LEX_QUOTEDDOC;
+      fprintf (stderr, "LEX_QUOTEDDOC%s", f ? "|" : "");
+    }
+  if (f & LEX_INWORD)
+    {
+      f &= ~LEX_INWORD;
+      fprintf (stderr, "LEX_INWORD%s", f ? "|" : "");
+    }
+
+  fprintf (stderr, "\n");
+  fflush (stderr);
+}
+#endif
+
 /* Parse a $(...) command substitution.  This is messier than I'd like, and
    reproduces a lot more of the token-reading code than I'd like. */
 static char *
@@ -5967,7 +6062,7 @@ eof_error:
 		tind++;
 	      if (STREQN (ret + tind, heredelim, hdlen))
 		{
-		  tflags &= ~(LEX_STRIPDOC|LEX_INHEREDOC);
+		  tflags &= ~(LEX_STRIPDOC|LEX_INHEREDOC|LEX_QUOTEDDOC);
 /*itrace("parse_comsub:%d: found here doc end `%s'", line_number, ret + tind);*/
 		  free (heredelim);
 		  heredelim = 0;
@@ -5987,21 +6082,29 @@ eof_error:
       if ((tflags & LEX_INHEREDOC) && ch == close && count == 1)
 	{
 	  int tind;
-/*itrace("parse_comsub: in here doc, ch == close, retind - firstind = %d hdlen = %d retind = %d", retind-lex_firstind, hdlen, retind);*/
+/*itrace("parse_comsub:%d: in here doc, ch == close, retind - firstind = %d hdlen = %d retind = %d", line_number, retind-lex_firstind, hdlen, retind);*/
 	  tind = lex_firstind;
 	  while ((tflags & LEX_STRIPDOC) && ret[tind] == '\t')
 	    tind++;
 	  if (retind-tind == hdlen && STREQN (ret + tind, heredelim, hdlen))
 	    {
-	      tflags &= ~(LEX_STRIPDOC|LEX_INHEREDOC);
-/*itrace("parse_comsub:%d: found here doc end `%s'", line_number, ret + tind);*/
+	      tflags &= ~(LEX_STRIPDOC|LEX_INHEREDOC|LEX_QUOTEDDOC);
+/*itrace("parse_comsub:%d: found here doc end `%*s'", line_number, hdlen, ret + tind);*/
 	      free (heredelim);
 	      heredelim = 0;
 	      lex_firstind = -1;
 	    }
 	}
 
-      /* Don't bother counting parens or doing anything else if in a comment */
+      /* Don't bother counting parens or doing anything else if in a comment or
+	 here document (not exactly right for here-docs -- if we want to allow
+	 recursive calls to parse_comsub to have their own here documents,
+	 change the LEX_INHEREDOC to LEX_QUOTEDDOC here and uncomment the next
+	 clause below.  Note that to make this work completely, we need to make
+	 additional changes to allow xparse_dolparen to work right when the
+	 command substitution is parsed, because read_secondary_line doesn't know
+	 to recursively parse through command substitutions embedded in here-
+	 documents */
       if (tflags & (LEX_INCOMMENT|LEX_INHEREDOC))
 	{
 	  /* Add this character. */
@@ -6016,6 +6119,21 @@ eof_error:
 
 	  continue;
 	}
+#if 0
+      /* If we're going to recursively parse a command substitution inside a
+	 here-document, make sure we call parse_comsub recursively below.  See
+	 above for additional caveats. */
+      if ((tflags & LEX_INHEREDOC) && ((tflags & LEX_WASDOL) == 0 || ch != '(')) /*)*/
+	{
+	  /* Add this character. */
+	  RESIZE_MALLOCED_BUFFER (ret, retind, 1, retsize, 64);
+	  ret[retind++] = ch;
+	  if MBTEST(ch == '$')
+	    tflags |= LEX_WASDOL;
+	  else
+	    tflags &= ~LEX_WASDOL;
+	}
+#endif
 
       if (tflags & LEX_PASSNEXT)		/* last char was backslash */
 	{
@@ -6096,6 +6214,8 @@ eof_error:
 		  free (nestret);
 		  hdlen = STRLEN(heredelim);
 /*itrace("parse_comsub:%d: found here doc delimiter `%s' (%d)", line_number, heredelim, hdlen);*/
+		  if (STREQ (heredelim, nestret) == 0)
+		    tflags |= LEX_QUOTEDDOC;
 		}
 	      if (ch == '\n')
 		{
@@ -6158,14 +6278,34 @@ eof_error:
 	      if (STREQN (ret + retind - 4, "case", 4))
 		{
 		  tflags |= LEX_INCASE;
+		  tflags &= ~LEX_RESWDOK;
 /*itrace("parse_comsub:%d: found `case', lex_incase -> 1 lex_reswdok -> 0", line_number);*/
 		}
 	      else if (STREQN (ret + retind - 4, "esac", 4))
 		{
 		  tflags &= ~LEX_INCASE;
-/*itrace("parse_comsub:%d: found `esac', lex_incase -> 0 lex_reswdok -> 0", line_number);*/
+/*itrace("parse_comsub:%d: found `esac', lex_incase -> 0 lex_reswdok -> 1", line_number);*/
+		  tflags |= LEX_RESWDOK;
+		  lex_rwlen = 0;
 		}
-	      tflags &= ~LEX_RESWDOK;
+	      else if (STREQN (ret + retind - 4, "done", 4) ||
+		       STREQN (ret + retind - 4, "then", 4) ||
+		       STREQN (ret + retind - 4, "else", 4) ||
+		       STREQN (ret + retind - 4, "elif", 4) ||
+		       STREQN (ret + retind - 4, "time", 4))
+		{
+		  /* these are four-character reserved words that can be
+		     followed by a reserved word; anything else turns off
+		     the reserved-word-ok flag */
+/*itrace("parse_comsub:%d: found `%.4s', lex_reswdok -> 1", line_number, ret+retind-4);*/
+		  tflags |= LEX_RESWDOK;
+		  lex_rwlen = 0;
+		}
+	       else
+		{
+		  tflags &= ~LEX_RESWDOK;
+/*itrace("parse_comsub:%d: found `%.4s', lex_reswdok -> 0", line_number, ret+retind-4);*/
+		}
 	    }
 	  else if MBTEST((tflags & LEX_CKCOMMENT) && ch == '#' && (lex_rwlen == 0 || ((tflags & LEX_INWORD) && lex_wlen == 0)))
 	    ;	/* don't modify LEX_RESWDOK if we're starting a comment */
@@ -6854,7 +6994,7 @@ read_token_word (character)
 
   /* Non-zero means to ignore the value of the next character, and just
      to add it no matter what. */
- int pass_next_character;
+  int pass_next_character;
 
   /* The current delimiting character. */
   int cd;
@@ -7151,7 +7291,6 @@ read_token_word (character)
 	}
 
 got_character:
-
       if (character == CTLESC || character == CTLNUL)
 	{
 	  RESIZE_MALLOCED_BUFFER (token, token_index, 2, token_buffer_size,
@@ -7444,7 +7583,7 @@ history_delimiting_chars (line)
 	  last_was_heredoc = 0;
 	  return "\n";
 	}
-      return (current_command_line_count == 2 ? "\n" : "");
+      return (here_doc_first_line ? "\n" : "");
     }
 
   if (parser_state & PST_COMPASSIGN)
@@ -7479,7 +7618,8 @@ history_delimiting_chars (line)
       last_was_heredoc = 1;
       return "\n";
     }
-
+  else if ((parser_state & PST_HEREDOC) == 0 && current_command_line_count > 1 && need_here_doc > 0)
+    return "\n";
   else if (token_before_that == WORD && two_tokens_ago == FOR)
     {
       /* Tricky.  `for i\nin ...' should not have a semicolon, but
@@ -7515,6 +7655,8 @@ prompt_again ()
 
   ps1_prompt = get_string_value ("PS1");
   ps2_prompt = get_string_value ("PS2");
+
+  ps0_prompt = get_string_value ("PS0");
 
   if (!prompt_string_pointer)
     prompt_string_pointer = &ps1_prompt;
@@ -7610,7 +7752,7 @@ decode_prompt_string (string)
 #if defined (PROMPT_STRING_DECODE)
   int result_size, result_index;
   int c, n, i;
-  char *temp, octal_string[4];
+  char *temp, *t_host, octal_string[4];
   struct tm *tm;  
   time_t the_time;
   char timebuf[128];
@@ -7758,7 +7900,11 @@ decode_prompt_string (string)
 
 	    case 's':
 	      temp = base_pathname (shell_name);
-	      temp = savestring (temp);
+	      /* Try to quote anything the user can set in the file system */
+	      if (promptvars || posixly_correct)
+		temp = sh_backslash_quote_for_double_quotes (temp);
+	      else
+		temp = savestring (temp);
 	      goto add_string;
 
 	    case 'v':
@@ -7848,9 +7994,17 @@ decode_prompt_string (string)
 
 	    case 'h':
 	    case 'H':
-	      temp = savestring (current_host_name);
-	      if (c == 'h' && (t = (char *)strchr (temp, '.')))
+	      t_host = savestring (current_host_name);
+	      if (c == 'h' && (t = (char *)strchr (t_host, '.')))
 		*t = '\0';
+	      if (promptvars || posixly_correct)
+		/* Make sure that expand_prompt_string is called with a
+		   second argument of Q_DOUBLE_QUOTES if we use this
+		   function here. */
+		temp = sh_backslash_quote_for_double_quotes (t_host);
+	      else
+		temp = savestring (t_host);
+	      free (t_host);
 	      goto add_string;
 
 	    case '#':
@@ -8473,6 +8627,7 @@ save_parser_state (ps)
   ps->expand_aliases = expand_aliases;
   ps->echo_input_at_read = echo_input_at_read;
   ps->need_here_doc = need_here_doc;
+  ps->here_doc_first_line = here_doc_first_line;
 
 #if 0
   for (i = 0; i < HEREDOC_MAX; i++)
@@ -8534,6 +8689,7 @@ restore_parser_state (ps)
   expand_aliases = ps->expand_aliases;
   echo_input_at_read = ps->echo_input_at_read;
   need_here_doc = ps->need_here_doc;
+  here_doc_first_line = ps->here_doc_first_line;
 
 #if 0
   for (i = 0; i < HEREDOC_MAX; i++)

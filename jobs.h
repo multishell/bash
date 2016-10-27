@@ -1,6 +1,6 @@
 /* jobs.h -- structures and definitions used by the jobs.c file. */
 
-/* Copyright (C) 1993-2009 Free Software Foundation, Inc.
+/* Copyright (C) 1993-2015 Free Software Foundation, Inc.
 
    This file is part of GNU Bash, the Bourne Again SHell.
 
@@ -142,17 +142,27 @@ struct jobstats {
   JOB *j_lastasync;	/* last async job allocated by stop_pipeline */
 };
 
+/* Revised to accommodate new hash table bgpids implementation. */
+typedef pid_t ps_index_t;
+
 struct pidstat {
- struct pidstat *next;
- pid_t pid;
- int status;
+  ps_index_t bucket_next;
+  ps_index_t bucket_prev;
+
+  pid_t pid;
+  bits16_t status;		/* only 8 bits really needed */
 };
 
 struct bgpids {
-  struct pidstat *list;
-  struct pidstat *end;
+  struct pidstat *storage;	/* storage arena */
+
+  ps_index_t head;
+  ps_index_t nalloc;
+
   int npid;
 };
+
+#define NO_PIDSTAT (ps_index_t)-1
 
 #define NO_JOB  -1	/* An impossible job array index. */
 #define DUP_JOB -2	/* A possible return value for get_job_spec (). */
@@ -220,7 +230,7 @@ extern int set_tty_state __P((void));
 extern int job_exit_status __P((int));
 extern int job_exit_signal __P((int));
 
-extern int wait_for_single_pid __P((pid_t));
+extern int wait_for_single_pid __P((pid_t, int));
 extern void wait_for_background_pids __P((void));
 extern int wait_for __P((pid_t));
 extern int wait_for_job __P((int));
