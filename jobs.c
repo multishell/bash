@@ -2233,7 +2233,11 @@ wait_for (pid)
   /* This is possibly a race condition -- should it go in stop_pipeline? */
   wait_sigint_received = 0;
   if (job_control == 0)
-    old_sigint_handler = set_signal_handler (SIGINT, wait_sigint_handler);
+    {
+      old_sigint_handler = set_signal_handler (SIGINT, wait_sigint_handler);
+      if (old_sigint_handler == SIG_IGN)
+	set_signal_handler (SIGINT, old_sigint_handler);
+    }
 
   termination_state = last_command_exit_value;
 
