@@ -2575,6 +2575,13 @@ expand_assignment_string_to_string (string, quoted)
   return (expand_string_to_string_internal (string, quoted, expand_string_assignment));
 }
 
+char *
+expand_arith_string (string, quoted)
+     char *string;
+{
+  return (expand_string_if_necessary (string, quoted, expand_string));
+}
+
 #if defined (COND_COMMAND)
 /* Just remove backslashes in STRING.  Returns a new string. */
 char *
@@ -5248,7 +5255,7 @@ verify_substring_values (value, substr, vtype, e1p, e2p)
   else
     t = (char *)0;
 
-  temp1 = expand_string_if_necessary (substr, Q_DOUBLE_QUOTES, expand_string);
+  temp1 = expand_arith_string (substr, Q_DOUBLE_QUOTES);
   *e1p = evalexp (temp1, &expok);
   free (temp1);
   if (expok == 0)
@@ -5293,7 +5300,7 @@ verify_substring_values (value, substr, vtype, e1p, e2p)
     {
       t++;
       temp2 = savestring (t);
-      temp1 = expand_string_if_necessary (temp2, Q_DOUBLE_QUOTES, expand_string);
+      temp1 = expand_arith_string (temp2, Q_DOUBLE_QUOTES);
       free (temp2);
       t[-1] = ':';
       *e2p = evalexp (temp1, &expok);
@@ -6435,7 +6442,7 @@ param_expand (string, sindex, quoted, expanded_something,
 	  temp2[t_index] = '\0';
 
 	  /* Expand variables found inside the expression. */
-	  temp1 = expand_string_if_necessary (temp2, Q_DOUBLE_QUOTES, expand_string);
+	  temp1 = expand_arith_string (temp2, Q_DOUBLE_QUOTES);
 	  free (temp2);
 
 arithsub:
@@ -6477,7 +6484,7 @@ comsub:
       zindex = t_index;
 
        /* Do initial variable expansion. */
-      temp1 = expand_string_if_necessary (temp, Q_DOUBLE_QUOTES, expand_string);
+      temp1 = expand_arith_string (temp, Q_DOUBLE_QUOTES);
 
       goto arithsub;
 
