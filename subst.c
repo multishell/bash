@@ -4812,7 +4812,7 @@ array_length_reference (s)
   else
     t = (ind == 0) ? value_cell (var) : (char *)NULL;
 
-  len = STRLEN (t);
+  len = MB_STRLEN (t);
   return (len);
 }
 #endif /* ARRAY_VARS */
