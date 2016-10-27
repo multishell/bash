@@ -668,7 +668,8 @@ number(p, d, base)
     p->flags &= ~PF_ZEROPAD;
 
   sd = d;	/* signed for ' ' padding in base 10 */
-  flags = (*p->pf == 'u' || *p->pf == 'U') ? FL_UNSIGNED : 0;
+  flags = 0;
+  flags = (*p->pf == 'x' || *p->pf == 'X' || *p->pf == 'o' || *p->pf == 'u' || *p->pf == 'U') ? FL_UNSIGNED : 0;
   if (*p->pf == 'X')
     flags |= FL_HEXUPPER;
 
@@ -738,7 +739,7 @@ lnumber(p, d, base)
     p->flags &= ~PF_ZEROPAD;
 
   sd = d;	/* signed for ' ' padding in base 10 */
-  flags = (*p->pf == 'u' || *p->pf == 'U') ? FL_UNSIGNED : 0;
+  flags = (*p->pf == 'x' || *p->pf == 'X' || *p->pf == 'o' || *p->pf == 'u' || *p->pf == 'U') ? FL_UNSIGNED : 0;
   if (*p->pf == 'X')
     flags |= FL_HEXUPPER;
 
