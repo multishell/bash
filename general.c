@@ -766,7 +766,7 @@ trim_pathname (name, maxlen)
   *nbeg++ = '.';
 
   nlen = nend - ntail;
-  memcpy (nbeg, ntail, nlen);
+  memmove (nbeg, ntail, nlen);
   nbeg[nlen] = '\0';
 
   return name;
