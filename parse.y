@@ -1615,10 +1615,11 @@ save_token_state ()
 {
   int *ret;
 
-  ret = (int *)xmalloc (3 * sizeof (int));
+  ret = (int *)xmalloc (4 * sizeof (int));
   ret[0] = last_read_token;
   ret[1] = token_before_that;
   ret[2] = two_tokens_ago;
+  ret[3] = current_token;
   return ret;
 }
 
@@ -1631,6 +1632,7 @@ restore_token_state (ts)
   last_read_token = ts[0];
   token_before_that = ts[1];
   two_tokens_ago = ts[2];
+  current_token = ts[3];
 }
 
 /*
@@ -2668,6 +2670,7 @@ reset_parser ()
   FREE (word_desc_to_read);
   word_desc_to_read = (WORD_DESC *)NULL;
 
+  current_token = '\n';		/* XXX */
   last_read_token = '\n';
   token_to_read = '\n';
 }
