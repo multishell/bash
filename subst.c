@@ -2187,7 +2187,7 @@ do_compound_assignment (name, value, flags)
   if (mklocal && variable_context)
     {
       v = find_variable (name);
-      if (v == 0 || array_p (v) == 0)
+      if (v == 0 || array_p (v) == 0 || v->context != variable_context)
         v = make_local_array_variable (name);
       v = assign_array_var_from_string (v, value, flags);
     }
