@@ -984,8 +984,6 @@ delete_job (job_index, dflags)
   temp = jobs[job_index];
   if (temp == 0)
     return;
-  if (job_index == js.j_current || job_index == js.j_previous)
-    reset_current ();
 
   if ((dflags & DEL_NOBGPID) == 0)
     {
@@ -1028,6 +1026,9 @@ delete_job (job_index, dflags)
     js.j_firstj = js.j_lastj = 0;
   else if (jobs[js.j_firstj] == 0 || jobs[js.j_lastj] == 0)
     reset_job_indices ();
+
+  if (job_index == js.j_current || job_index == js.j_previous)
+    reset_current ();
 }
 
 /* Must be called with SIGCHLD blocked. */
