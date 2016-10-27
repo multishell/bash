@@ -1,7 +1,7 @@
 This file is setattr.def, from which is created setattr.c.
 It implements the builtins "export" and "readonly", in Bash.
 
-Copyright (C) 1987-2012 Free Software Foundation, Inc.
+Copyright (C) 1987-2014 Free Software Foundation, Inc.
 
 This file is part of GNU Bash, the Bourne Again SHell.
 
@@ -34,6 +34,7 @@ $PRODUCES setattr.c
 #include "../bashintl.h"
 
 #include "../shell.h"
+#include "../flags.h"
 #include "common.h"
 #include "bashgetopt.h"
 
@@ -93,8 +94,8 @@ Options:
   -a	refer to indexed array variables
   -A	refer to associative array variables
   -f	refer to shell functions
-  -p	display a list of all readonly variables or functions, depending on
-        whether or not the -f option is given
+  -p	display a list of all readonly variables or functions,
+		depending on whether or not the -f option is given
 
 An argument of `--' disables further option processing.
 
@@ -185,6 +186,11 @@ set_or_show_attributes (list, attribute, nodefs)
 	      if (var == 0)
 		{
 		  builtin_error (_("%s: not a function"), name);
+		  any_failed++;
+		}
+	      else if ((attribute & att_exported) && undo == 0 && exportable_function_name (name) == 0)
+		{
+		  builtin_error (_("%s: cannot export"), name);
 		  any_failed++;
 		}
 	      else
@@ -296,6 +302,12 @@ set_or_show_attributes (list, attribute, nodefs)
 	      else if (assoc_only && assoc_p (var) == 0)
 		continue;
 #endif
+
+	      /* If we imported a variable that's not a valid identifier, don't
+		 show it in any lists. */
+	      if ((var->attributes & (att_invisible|att_imported)) == (att_invisible|att_imported))
+		continue;
+
 	      if ((var->attributes & attribute))
 		{
 		  show_var_attributes (var, READONLY_OR_EXPORT, nodefs);
@@ -336,18 +348,12 @@ show_all_var_attributes (v, nodefs)
   return (any_failed == 0 ? EXECUTION_SUCCESS : EXECUTION_FAILURE);
 }
 
-/* Show the attributes for shell variable VAR.  If NODEFS is non-zero,
-   don't show function definitions along with the name.  If PATTR is
-   non-zero, it indicates we're being called from `export' or `readonly'.
-   In POSIX mode, this prints the name of the calling builtin (`export'
-   or `readonly') instead of `declare', and doesn't print function defs
-   when called by `export' or `readonly'. */
 int
-show_var_attributes (var, pattr, nodefs)
+var_attribute_string (var, pattr, flags)
      SHELL_VAR *var;
-     int pattr, nodefs;
+     int pattr;
+     char *flags;	/* filled in with attributes */
 {
-  char flags[16], *x;
   int i;
 
   i = 0;
@@ -405,6 +411,24 @@ show_var_attributes (var, pattr, nodefs)
     }
 
   flags[i] = '\0';
+  return i;
+}
+
+/* Show the attributes for shell variable VAR.  If NODEFS is non-zero,
+   don't show function definitions along with the name.  If PATTR is
+   non-zero, it indicates we're being called from `export' or `readonly'.
+   In POSIX mode, this prints the name of the calling builtin (`export'
+   or `readonly') instead of `declare', and doesn't print function defs
+   when called by `export' or `readonly'. */
+int
+show_var_attributes (var, pattr, nodefs)
+     SHELL_VAR *var;
+     int pattr, nodefs;
+{
+  char flags[MAX_ATTRIBUTES], *x;
+  int i;
+
+  i = var_attribute_string (var, pattr, flags);
 
   /* If we're printing functions with definitions, print the function def
      first, then the attributes, instead of printing output that can't be
@@ -425,10 +449,12 @@ show_var_attributes (var, pattr, nodefs)
     printf ("%s ", this_command_name);
 
 #if defined (ARRAY_VARS)
-  if (array_p (var))
-    print_array_assignment (var, 1);
+  if (invisible_p (var) && (array_p (var) || assoc_p (var)))
+    printf ("%s\n", var->name);
+  else if (array_p (var))
+    print_array_assignment (var, 0);
   else if (assoc_p (var))
-    print_assoc_assignment (var, 1);
+    print_assoc_assignment (var, 0);
   else
 #endif
   /* force `readonly' and `export' to not print out function definitions
@@ -461,7 +487,7 @@ show_name_attributes (name, nodefs)
   var = find_variable_noref (name);
 #endif
 
-  if (var && invisible_p (var) == 0)
+  if (var /* && invisible_p (var) == 0 */)	/* XXX bash-4.4/bash-5.0 */
     {
       show_var_attributes (var, READONLY_OR_EXPORT, nodefs);
       return (0);
@@ -536,7 +562,8 @@ set_var_attribute (name, attribute, undo)
 	  if (var == 0)
 	    {
 	      var = bind_variable (name, (char *)NULL, 0);
-	      VSETATTR (var, att_invisible);
+	      if (no_invisible_vars == 0)
+		VSETATTR (var, att_invisible);
 	    }
 	  else if (var->context != 0)
 	    VSETATTR (var, att_propagate);

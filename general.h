@@ -124,7 +124,7 @@ typedef struct {
   int token;
 } STRING_INT_ALIST;
 
-/* A macro to avoid making an unneccessary function call. */
+/* A macro to avoid making an unnecessary function call. */
 #define REVERSE_LIST(list, type) \
   ((list && list->next) ? (type)list_reverse ((GENERIC_LIST *)list) \
 			: (type)(list))
@@ -219,6 +219,9 @@ typedef int sh_ignore_func_t __P((const char *));	/* sh_icpfunc_t */
 typedef int sh_assign_func_t __P((const char *));
 typedef int sh_wassign_func_t __P((WORD_DESC *, int));
 
+typedef int sh_load_func_t __P((char *));
+typedef void sh_unload_func_t __P((char *));
+
 typedef int sh_builtin_func_t __P((WORD_LIST *)); /* sh_wlist_func_t */
 
 #endif /* SH_FUNCTION_TYPEDEF */
@@ -283,6 +286,8 @@ extern void print_rlimtype __P((RLIMTYPE, int));
 extern int all_digits __P((char *));
 extern int legal_number __P((const char *, intmax_t *));
 extern int legal_identifier __P((char *));
+extern int importable_function_name __P((char *, size_t));
+extern int exportable_function_name __P((char *));
 extern int check_identifier __P((WORD_DESC *, int));
 extern int legal_alias_name __P((char *, int));
 extern int assignment __P((const char *, int));
@@ -313,6 +318,7 @@ extern char *base_pathname __P((char *));
 extern char *full_pathname __P((char *));
 extern char *polite_directory_format __P((char *));
 extern char *trim_pathname __P((char *, int));
+extern char *printable_filename __P((char *, int));
 
 extern char *extract_colon_unit __P((char *, int *));
 
@@ -323,5 +329,7 @@ extern char *bash_tilde_expand __P((const char *, int));
 extern int group_member __P((gid_t));
 extern char **get_group_list __P((int *));
 extern int *get_group_array __P((int *));
+
+extern char *conf_standard_path __P((void));
 
 #endif	/* _GENERAL_H_ */

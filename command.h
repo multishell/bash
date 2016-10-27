@@ -100,7 +100,6 @@ enum command_type { cm_for, cm_case, cm_while, cm_if, cm_simple, cm_select,
 #define W_ARRAYIND	0x1000000	/* word is an array index being expanded */
 #define W_ASSNGLOBAL	0x2000000	/* word is a global assignment to declare (declare/typeset -g) */
 #define W_NOBRACE	0x4000000	/* Don't perform brace expansion */
-#define W_ASSIGNINT	0x8000000	/* word is an integer assignment to declare */
 
 /* Possible values for subshell_environment */
 #define SUBSHELL_ASYNC	0x01	/* subshell caused by `command &' */
@@ -175,6 +174,7 @@ typedef struct element {
 #define CMD_COMMAND_BUILTIN 0x0800 /* command executed by `command' builtin */
 #define CMD_COPROC_SUBSHELL 0x1000
 #define CMD_LASTPIPE	    0x2000
+#define CMD_STDPATH	    0x4000	/* use standard path for command lookup */
 
 /* What a command looks like. */
 typedef struct command {

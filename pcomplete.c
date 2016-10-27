@@ -117,7 +117,7 @@ static int it_init_setopts __P((ITEMLIST *));
 static int it_init_shopts __P((ITEMLIST *));
 
 static int shouldexp_filterpat __P((char *));
-static char *preproc_filterpat __P((char *, char *));
+static char *preproc_filterpat __P((char *, const char *));
 
 static void init_itemlist_from_varlist __P((ITEMLIST *, SVFUNC *));
 
@@ -273,7 +273,7 @@ shouldexp_filterpat (s)
 static char *
 preproc_filterpat (pat, text)
      char *pat;
-     char *text;
+     const char *text;
 {
   char *ret;
 
@@ -289,7 +289,8 @@ preproc_filterpat (pat, text)
 STRINGLIST *
 filter_stringlist (sl, filterpat, text)
      STRINGLIST *sl;
-     char *filterpat, *text;
+     char *filterpat;
+     const char *text;
 {
   int i, m, not;
   STRINGLIST *ret;
@@ -300,13 +301,17 @@ filter_stringlist (sl, filterpat, text)
 
   npat = shouldexp_filterpat (filterpat) ? preproc_filterpat (filterpat, text) : filterpat;
 
+#if defined (EXTENDED_GLOB)
+  not = (npat[0] == '!' && (extended_glob == 0 || npat[1] != '('));	/*)*/
+#else
   not = (npat[0] == '!');
+#endif
   t = not ? npat + 1 : npat;
 
   ret = strlist_create (sl->list_size);
   for (i = 0; i < sl->list_len; i++)
     {
-      m = strmatch (t, sl->list[i], FNMATCH_EXTFLAG);
+      m = strmatch (t, sl->list[i], FNMATCH_EXTFLAG | FNMATCH_IGNCASE);
       if ((not && m == FNM_NOMATCH) || (not == 0 && m != FNM_NOMATCH))
 	free (sl->list[i]);
       else
@@ -1187,9 +1192,9 @@ gen_shell_function_matches (cs, cmd, text, line, ind, lwords, nw, cw, foundp)
 /* Build a command string with
 	$0 == cs->command	(command to execute for completion list)
    	$1 == command name	(command being completed)
-   	$2 = word to be completed (possibly null)
-   	$3 = previous word
-   and run in with command substitution.  Parse the results, one word
+	$2 == word to be completed (possibly null)
+	$3 == previous word
+   and run it with command substitution.  Parse the results, one word
    per line, with backslashes allowed to escape newlines.  Build a
    STRINGLIST from the results and return it. */
 
@@ -1522,6 +1527,8 @@ pcomp_set_readline_variables (flags, nval)
      option is supposed to turn it off */
   if (flags & COPT_NOQUOTE)
     rl_filename_quoting_desired = 1 - nval;
+  if (flags & COPT_NOSORT)
+    rl_sort_completion_matches = 1 - nval;
 }
 
 /* Set or unset FLAGS in the options word of the current compspec.

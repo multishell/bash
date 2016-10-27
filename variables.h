@@ -1,6 +1,6 @@
 /* variables.h -- data structures for shell variables. */
 
-/* Copyright (C) 1987-2012 Free Software Foundation, Inc.
+/* Copyright (C) 1987-2015 Free Software Foundation, Inc.
 
    This file is part of GNU Bash, the Bourne Again SHell.
 
@@ -156,6 +156,9 @@ typedef struct _vlist {
 
 #define tempvar_p(var)		((((var)->attributes) & (att_tempvar)))
 
+/* Variable names: lvalues */
+#define name_cell(var)		((var)->name)
+
 /* Acessing variable values: rvalues */
 #define value_cell(var)		((var)->value)
 #define function_cell(var)	(COMMAND *)((var)->value)
@@ -165,8 +168,9 @@ typedef struct _vlist {
 
 #define NAMEREF_MAX	8	/* only 8 levels of nameref indirection */
 
-#define var_isnull(var)		((var)->value == 0)
 #define var_isset(var)		((var)->value != 0)
+#define var_isunset(var)	((var)->value == 0)
+#define var_isnull(var)		((var)->value && *(var)->value == 0)
 
 /* Assigning variable values: lvalues */
 #define var_setvalue(var, str)	((var)->value = (str))
@@ -250,6 +254,8 @@ extern SHELL_VAR *find_global_variable __P((const char *));
 extern SHELL_VAR *find_global_variable_noref __P((const char *));
 extern SHELL_VAR *find_shell_variable __P((const char *));
 extern SHELL_VAR *find_tempenv_variable __P((const char *));
+extern SHELL_VAR *find_variable_no_invisible __P((const char *));
+extern SHELL_VAR *find_variable_for_assignment __P((const char *));
 extern SHELL_VAR *copy_variable __P((SHELL_VAR *));
 extern SHELL_VAR *make_local_variable __P((const char *));
 extern SHELL_VAR *bind_variable __P((const char *, char *, int));
@@ -320,6 +326,7 @@ extern void dispose_used_env_vars __P((void));
 extern void dispose_function_env __P((void));
 extern void dispose_builtin_env __P((void));
 extern void merge_temporary_env __P((void));
+extern void flush_temporary_env __P((void));
 extern void merge_builtin_env __P((void));
 extern void kill_all_local_variables __P((void));
 
@@ -372,6 +379,7 @@ extern void sv_ifs __P((char *));
 extern void sv_path __P((char *));
 extern void sv_mail __P((char *));
 extern void sv_funcnest __P((char *));
+extern void sv_execignore __P((char *));
 extern void sv_globignore __P((char *));
 extern void sv_ignoreeof __P((char *));
 extern void sv_strict_posix __P((char *));

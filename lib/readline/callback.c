@@ -161,6 +161,36 @@ rl_callback_read_char ()
 	  CALLBACK_READ_RETURN ();
 	}
 #if defined (VI_MODE)
+      /* States that can occur while in state VIMOTION have to be checked
+	 before RL_STATE_VIMOTION */
+      else if (RL_ISSTATE (RL_STATE_CHARSEARCH))
+	{
+	  int k;
+
+	  k = _rl_callback_data->i2;
+
+	  eof = (*_rl_callback_func) (_rl_callback_data);
+	  /* If the function `deregisters' itself, make sure the data is
+	     cleaned up. */
+	  if (_rl_callback_func == 0)	/* XXX - just sanity check */
+	    {
+	      if (_rl_callback_data)
+		{
+		  _rl_callback_data_dispose (_rl_callback_data);
+		  _rl_callback_data = 0;
+		}
+	    }
+
+	  /* Messy case where vi motion command can be char search */
+	  if (RL_ISSTATE (RL_STATE_VIMOTION))
+	    {
+	      _rl_vi_domove_motion_cleanup (k, _rl_vimvcxt);
+	      _rl_internal_char_cleanup ();
+	      CALLBACK_READ_RETURN ();	      
+	    }
+
+	  _rl_internal_char_cleanup ();
+	}
       else if (RL_ISSTATE (RL_STATE_VIMOTION))
 	{
 	  eof = _rl_vi_domove_callback (_rl_vimvcxt);
@@ -284,10 +314,36 @@ _rl_callback_data_alloc (count)
   return arg;
 }
 
-void _rl_callback_data_dispose (arg)
+void
+_rl_callback_data_dispose (arg)
      _rl_callback_generic_arg *arg;
 {
   xfree (arg);
 }
 
+/* Make sure that this agrees with cases in rl_callback_read_char */
+void
+rl_callback_sigcleanup ()
+{
+  if (RL_ISSTATE (RL_STATE_CALLBACK) == 0)
+    return;
+
+  if (RL_ISSTATE (RL_STATE_ISEARCH))
+    _rl_isearch_cleanup (_rl_iscxt, 0);
+  else if (RL_ISSTATE (RL_STATE_NSEARCH))
+    _rl_nsearch_cleanup (_rl_nscxt, 0);
+  else if (RL_ISSTATE (RL_STATE_VIMOTION))
+    RL_UNSETSTATE (RL_STATE_VIMOTION);
+  else if (RL_ISSTATE (RL_STATE_NUMERICARG))
+    {
+      _rl_argcxt = 0;
+      RL_UNSETSTATE (RL_STATE_NUMERICARG);
+    }
+  else if (RL_ISSTATE (RL_STATE_MULTIKEY))
+    RL_UNSETSTATE (RL_STATE_MULTIKEY);
+  if (RL_ISSTATE (RL_STATE_CHARSEARCH))
+    RL_UNSETSTATE (RL_STATE_CHARSEARCH);
+
+  _rl_callback_func = 0;
+}
 #endif

@@ -1,7 +1,7 @@
 This file is set.def, from which is created set.c.
 It implements the "set" and "unset" builtins in Bash.
 
-Copyright (C) 1987-2012 Free Software Foundation, Inc.
+Copyright (C) 1987-2015 Free Software Foundation, Inc.
 
 This file is part of GNU Bash, the Bourne Again SHell.
 
@@ -179,6 +179,8 @@ static int bash_set_history __P((int, char *));
 static const char * const on = "on";
 static const char * const off = "off";
 
+static int previous_option_value;
+
 /* A struct used to match long options for set -o to the corresponding
    option letter or internal variable.  The functions can be called to
    dynamically generate values. */
@@ -322,6 +324,41 @@ get_minus_o_opts ()
   return ret;
 }
 
+char *
+get_current_options ()
+{
+  char *temp;
+  int i;
+
+  temp = (char *)xmalloc (1 + N_O_OPTIONS);
+  for (i = 0; o_options[i].name; i++)
+    {
+      if (o_options[i].letter)
+	temp[i] = *(find_flag (o_options[i].letter));
+      else
+	temp[i] = GET_BINARY_O_OPTION_VALUE (i, o_options[i].name);
+    }
+  temp[i] = '\0';
+  return (temp);
+}
+
+void
+set_current_options (bitmap)
+     const char *bitmap;
+{
+  int i;
+
+  if (bitmap == 0)
+    return;
+  for (i = 0; o_options[i].name; i++)
+    {
+      if (o_options[i].letter)
+	change_flag (o_options[i].letter, bitmap[i] ? FLAG_ON : FLAG_OFF);
+      else
+	SET_BINARY_O_OPTION_VALUE (i, bitmap[i] ? FLAG_ON : FLAG_OFF, o_options[i].name);
+    }
+}
+
 static int
 set_ignoreeof (on_or_off, option_name)
      int on_or_off;
@@ -425,12 +462,13 @@ set_minus_o_option (on_or_off, option_name)
 	{
 	  if (o_options[i].letter == 0)
 	    {
+	      previous_option_value = GET_BINARY_O_OPTION_VALUE (i, o_options[i].name);
 	      SET_BINARY_O_OPTION_VALUE (i, on_or_off, option_name);
 	      return (EXECUTION_SUCCESS);
 	    }
 	  else
 	    {
-	      if (change_flag (o_options[i].letter, on_or_off) == FLAG_ERROR)
+	      if ((previous_option_value = change_flag (o_options[i].letter, on_or_off)) == FLAG_ERROR)
 		{
 		  sh_invalidoptname (option_name);
 		  return (EXECUTION_FAILURE);
@@ -615,6 +653,13 @@ set_builtin (list)
     {
       switch (flag_name)
 	{
+	  case 'i':	/* don't allow set -i */
+	    s[0] = list_opttype;
+	    s[1] = 'i';
+	    s[2] = '\0';
+	    sh_invalidopt (s);
+	    builtin_usage ();
+	    return (EX_USAGE);
 	  case '?':
 	    builtin_usage ();
 	    return (list_optopt == '?' ? EXECUTION_SUCCESS : EX_USAGE);
@@ -733,7 +778,7 @@ Options:
   -f	treat each NAME as a shell function
   -v	treat each NAME as a shell variable
   -n	treat each NAME as a name reference and unset the variable itself
-	rather than the variable it references
+		rather than the variable it references
 
 Without options, unset first tries to unset a variable, and if that fails,
 tries to unset a function.
@@ -802,7 +847,7 @@ unset_builtin (list)
 
 #if defined (ARRAY_VARS)
       unset_array = 0;
-      if (!unset_function && valid_array_reference (name))
+      if (!unset_function && valid_array_reference (name, 0))
 	{
 	  t = strchr (name, '[');
 	  *t++ = '\0';
@@ -832,6 +877,10 @@ unset_builtin (list)
 	  NEXT_VARIABLE ();
 	}
 
+      /* if we have a nameref we want to use it */
+      if (var && unset_function == 0 && nameref == 0 && STREQ (name, name_cell(var)) == 0)
+	name = name_cell (var);
+
       /* Posix.2 says try variables first, then functions.  If we would
 	 find a function after unsuccessfully searching for a variable,
 	 note that we're acting on a function now as if -f were
@@ -854,21 +903,27 @@ unset_builtin (list)
 #if defined (ARRAY_VARS)
       if (var && unset_array)
 	{
-	  if (array_p (var) == 0 && assoc_p (var) == 0)
+	  /* Let unbind_array_element decide what to do with non-array vars */
+	  tem = unbind_array_element (var, t);
+	  if (tem == -2 && array_p (var) == 0 && assoc_p (var) == 0)
 	    {
 	      builtin_error (_("%s: not an array variable"), var->name);
 	      NEXT_VARIABLE ();
 	    }
-	  else
-	    {
-	      tem = unbind_array_element (var, t);
-	      if (tem == -1)
-		any_failed++;
-	    }
+	  else if (tem < 0)
+	    any_failed++;
 	}
       else
 #endif /* ARRAY_VARS */
-      tem = unset_function ? unbind_func (name) : (nameref ? unbind_nameref (name) : unbind_variable (name));
+      /* If we're trying to unset a nameref variable whose value isn't a set
+	 variable, make sure we still try to unset the nameref's value */
+      if (var == 0 && nameref == 0 && unset_function == 0)
+	{
+	  var = find_variable_last_nameref (name);
+	  tem = (var && nameref_p (var)) ? unbind_variable (nameref_cell (var)) : unbind_variable (name);
+	}
+      else
+	tem = unset_function ? unbind_func (name) : (nameref ? unbind_nameref (name) : unbind_variable (name));
 
       /* This is what Posix.2 says:  ``If neither -f nor -v
 	 is specified, the name refers to a variable; if a variable by
@@ -876,6 +931,8 @@ unset_builtin (list)
 	 shall be unset.'' */
       if (tem == -1 && unset_function == 0 && unset_variable == 0)
 	tem = unbind_func (name);
+
+      name = list->word->word;		/* reset above for namerefs */
 
       /* SUSv3, POSIX.1-2001 say:  ``Unsetting a variable or function that
 	 was not previously set shall not be considered an error.'' */

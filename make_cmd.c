@@ -61,8 +61,8 @@ extern int last_command_exit_value;
 sh_obj_cache_t wdcache = {0, 0, 0};
 sh_obj_cache_t wlcache = {0, 0, 0};
 
-#define WDCACHESIZE	60
-#define WLCACHESIZE	60
+#define WDCACHESIZE	128
+#define WLCACHESIZE	128
 
 static COMMAND *make_for_or_select __P((enum command_type, WORD_DESC *, WORD_LIST *, COMMAND *, int));
 #if defined (ARITH_FOR_COMMAND)
@@ -261,6 +261,9 @@ make_arith_for_expr (s)
     return ((WORD_LIST *)NULL);
   wd = make_word (s);
   wd->flags |= W_NOGLOB|W_NOSPLIT|W_QUOTED|W_DQUOTE;	/* no word splitting or globbing */
+#if defined (PROCESS_SUBSTITUTION)
+  wd->flags |= W_NOPROCSUB;	/* no process substitution */
+#endif
   result = make_word_list (wd, (WORD_LIST *)NULL);
   return result;
 }
@@ -292,7 +295,7 @@ make_arith_for_command (exprs, action, lineno)
 	s++;
       start = s;
       /* skip to the semicolon or EOS */
-      i = skip_to_delim (start, 0, ";", SD_NOJMP);
+      i = skip_to_delim (start, 0, ";", SD_NOJMP|SD_NOPROCSUB);
       s = start + i;
 
       t = (i > 0) ? substring (start, 0, i) : (char *)NULL;

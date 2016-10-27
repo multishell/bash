@@ -61,6 +61,11 @@ typedef struct process {
   char *command;	/* The particular program that is running. */
 } PROCESS;
 
+struct pipeline_saver {
+  struct process *pipeline;
+  struct pipeline_saver *next;
+};
+
 /* PALIVE really means `not exited' */
 #define PSTOPPED(p)	(WIFSTOPPED((p)->status))
 #define PRUNNING(p)	((p)->running == PS_RUNNING)
@@ -176,9 +181,10 @@ extern void making_children __P((void));
 extern void stop_making_children __P((void));
 extern void cleanup_the_pipeline __P((void));
 extern void save_pipeline __P((int));
-extern void restore_pipeline __P((int));
+extern PROCESS *restore_pipeline __P((int));
 extern void start_pipeline __P((void));
 extern int stop_pipeline __P((int, COMMAND *));
+extern int discard_pipeline __P((PROCESS *));
 extern void append_process __P((char *, pid_t, int, int));
 
 extern void delete_job __P((int, int));
@@ -220,6 +226,8 @@ extern int wait_for __P((pid_t));
 extern int wait_for_job __P((int));
 extern int wait_for_any_job __P((void));
 
+extern void wait_sigint_cleanup __P((void));
+
 extern void notify_and_cleanup __P((void));
 extern void reap_dead_jobs __P((void));
 extern int start_job __P((int, int));
@@ -230,7 +238,7 @@ extern int give_terminal_to __P((pid_t, int));
 
 extern void run_sigchld_trap __P((int));
 
-extern void freeze_jobs_list __P((void));
+extern int freeze_jobs_list __P((void));
 extern void unfreeze_jobs_list __P((void));
 extern int set_job_control __P((int));
 extern void without_job_control __P((void));
@@ -239,6 +247,7 @@ extern void restart_job_control __P((void));
 extern void set_sigchld_handler __P((void));
 extern void ignore_tty_job_signals __P((void));
 extern void default_tty_job_signals __P((void));
+extern void get_original_tty_job_signals __P((void));
 
 extern void init_job_stats __P((void));
 

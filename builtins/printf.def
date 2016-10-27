@@ -40,8 +40,8 @@ printf interprets:
 
   %b	expand backslash escape sequences in the corresponding argument
   %q	quote the argument in a way that can be reused as shell input
-  %(fmt)T output the date-time string resulting from using FMT as a format
-        string for strftime(3)
+  %(fmt)T	output the date-time string resulting from using FMT as a format
+	        string for strftime(3)
 
 The format is re-used as necessary to consume all of the arguments.  If
 there are fewer arguments than the format requires,  extra format
@@ -255,7 +255,7 @@ printf_builtin (list)
 	case 'v':
 	  vname = list_optarg;
 #if defined (ARRAY_VARS)
-	  if (legal_identifier (vname) || valid_array_reference (vname))
+	  if (legal_identifier (vname) || valid_array_reference (vname, 0))
 #else
 	  if (legal_identifier (vname))
 #endif
@@ -284,6 +284,14 @@ printf_builtin (list)
     {
       builtin_usage ();
       return (EX_USAGE);
+    }
+
+  /* Allow printf -v var "" to act like var="" */
+  if (vflag && list->word->word && list->word->word[0] == '\0')
+    {
+      bind_printf_variable (vname, "", 0);
+      stupidly_hack_special_variables (vname);
+      return (EXECUTION_SUCCESS);
     }
 
   if (list->word->word == 0 || list->word->word[0] == '\0')
@@ -759,6 +767,8 @@ printstr (fmt, string, len, fieldwidth, precision)
 	  /* Error if precision > INT_MAX here? */
 	  pr = (mpr < 0 || mpr > INT_MAX) ? INT_MAX : mpr;
 	}
+      else
+	pr = 0;		/* "a null digit string is treated as zero" */
     }
 
 #if 0
@@ -1045,7 +1055,7 @@ vbprintf (format, va_alist)
 
 #ifdef DEBUG
   if  (strlen (vbuf) != vblen)
-    internal_error  ("printf:vbadd: vblen (%d) != strlen (vbuf) (%d)", vblen, (int)strlen (vbuf));
+    internal_error  ("printf:vbprintf: vblen (%d) != strlen (vbuf) (%d)", vblen, (int)strlen (vbuf));
 #endif
   
   return (blen);
@@ -1255,7 +1265,7 @@ bind_printf_variable (name, value, flags)
   SHELL_VAR *v;
 
 #if defined (ARRAY_VARS)
-  if (valid_array_reference (name) == 0)
+  if (valid_array_reference (name, 0) == 0)
     v = bind_variable (name, value, flags);
   else
     v = assign_array_element (name, value, flags);

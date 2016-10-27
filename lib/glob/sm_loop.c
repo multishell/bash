@@ -187,6 +187,22 @@ fprintf(stderr, "gmatch: pattern = %s; pe = %s\n", pattern, pe);
 		break;
 	    }
 
+	  /* The wildcards are the last element of the pattern.  The name
+	     cannot match completely if we are looking for a pathname and
+	     it contains another slash, unless FNM_LEADING_DIR is set. */
+	  if (c == L('\0'))
+	    {
+	      int r = (flags & FNM_PATHNAME) == 0 ? 0 : FNM_NOMATCH;
+	      if (flags & FNM_PATHNAME)
+		{
+		  if (flags & FNM_LEADING_DIR)
+		    r = 0;
+		  else if (MEMCHR (n, L('/'), se - n) == NULL)
+		    r = 0;
+		}
+	      return r;
+	    }
+
 	  /* If we've hit the end of the pattern and the last character of
 	     the pattern was handled by the loop above, we've succeeded.
 	     Otherwise, we need to match that last character. */
@@ -205,13 +221,30 @@ fprintf(stderr, "gmatch: pattern = %s; pe = %s\n", pattern, pe);
 	    }
 #endif
 
+	  /* If we stop at a slash in the pattern and we are looking for a
+	     pathname ([star]/foo), then consume enough of the string to stop
+	     at any slash and then try to match the rest of the pattern.  If
+	     the string doesn't contain a slash, fail */
+	  if (c == L('/') && (flags & FNM_PATHNAME))
+	    {
+	      while (n < se && *n != L('/'))
+		++n;
+	      if (n < se && *n == L('/') && (GMATCH (n+1, se, p, pe, flags) == 0))
+		return 0;
+	      return FNM_NOMATCH;	/* XXX */
+	    }
+
 	  /* General case, use recursion. */
 	  {
 	    U_CHAR c1;
+	    const CHAR *endp;
 
+	    endp = MEMCHR (n, (flags & FNM_PATHNAME) ? L('/') : L('\0'), se - n);
+	    if (endp == 0)
+	      endp = se;
 	    c1 = ((flags & FNM_NOESCAPE) == 0 && c == L('\\')) ? *p : c;
 	    c1 = FOLD (c1);
-	    for (--p; n < se; ++n)
+	    for (--p; n < endp; ++n)
 	      {
 		/* Only call strmatch if the first character indicates a
 		   possible match.  We can check the first character if
@@ -533,7 +566,8 @@ matched:
    embedded () and [].  If DELIM is 0, we scan until a matching `)'
    because we're scanning a `patlist'.  Otherwise, we scan until we see
    DELIM.  In all cases, we never scan past END.  The return value is the
-   first character after the matching DELIM. */
+   first character after the matching DELIM or NULL if the pattern is
+   empty or invalid. */
 /*static*/ CHAR *
 PATSCAN (string, end, delim)
      CHAR *string, *end;
@@ -797,6 +831,7 @@ fprintf(stderr, "extmatch: flags = %d\n", flags);
 #undef STRCOLL
 #undef STRLEN
 #undef STRCMP
+#undef MEMCHR
 #undef COLLEQUIV
 #undef RANGECMP
 #undef L

@@ -43,6 +43,8 @@
 #include "../execute_cmd.h"
 #include "../trap.h"
 
+#include <y.tab.h>
+
 #if defined (HISTORY)
 #  include "../bashhist.h"
 #endif
@@ -71,6 +73,7 @@ extern int indirection_level, subshell_environment;
 extern int return_catch_flag, return_catch_value;
 extern int last_command_exit_value;
 extern int executing_command_builtin;
+extern int current_token;		/* parse.y */
 
 /* How many `levels' of sourced files we have. */
 int sourcelevel = 0;
@@ -130,7 +133,7 @@ file_error_and_exit:
 	}
 
       return ((flags & FEVAL_BUILTIN) ? EXECUTION_FAILURE
-      				      : ((errno == ENOENT) ? 0 : -1));
+      				      : ((errno == ENOENT && (flags & FEVAL_ENOENTOK) != 0) ? 0 : -1));
     }
 
   errfunc = ((flags & FEVAL_BUILTIN) ? builtin_error : internal_error);
@@ -302,6 +305,11 @@ file_error_and_exit:
 #  endif
 #endif
 
+  /* If we end up with EOF after sourcing a file, which can happen when the file
+     doesn't end with a newline, pretend that it did. */
+  if (current_token == yacc_EOF)
+    push_token ('\n');		/* XXX */
+
   return ((flags & FEVAL_BUILTIN) ? result : 1);
 }
 
@@ -315,6 +323,23 @@ maybe_execute_file (fname, force_noninteractive)
 
   filename = bash_tilde_expand (fname, 0);
   flags = FEVAL_ENOENTOK;
+  if (force_noninteractive)
+    flags |= FEVAL_NONINT;
+  result = _evalfile (filename, flags);
+  free (filename);
+  return result;
+}
+
+int
+force_execute_file (fname, force_noninteractive)
+     const char *fname;
+     int force_noninteractive;
+{
+  char *filename;
+  int result, flags;
+
+  filename = bash_tilde_expand (fname, 0);
+  flags = 0;
   if (force_noninteractive)
     flags |= FEVAL_NONINT;
   result = _evalfile (filename, flags);

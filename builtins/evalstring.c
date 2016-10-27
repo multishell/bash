@@ -1,6 +1,6 @@
 /* evalstring.c - evaluate a string as one or more shell commands. */
 
-/* Copyright (C) 1996-2012 Free Software Foundation, Inc.
+/* Copyright (C) 1996-2015 Free Software Foundation, Inc.
 
    This file is part of GNU Bash, the Bourne Again SHell.
 
@@ -96,6 +96,33 @@ restore_lastcom (x)
   the_printed_command_except_trap = x;
 }
 
+int
+should_suppress_fork (command)
+     COMMAND *command;
+{
+  return (startup_state == 2 && parse_and_execute_level == 1 &&
+	  running_trap == 0 &&
+	  *bash_input.location.string == '\0' &&
+	  command->type == cm_simple &&
+	  signal_is_trapped (EXIT_TRAP) == 0 &&
+	  command->redirects == 0 && command->value.Simple->redirects == 0 &&
+	  ((command->flags & CMD_TIME_PIPELINE) == 0) &&
+	  ((command->flags & CMD_INVERT_RETURN) == 0));
+}
+
+void
+optimize_fork (command)
+     COMMAND *command;
+{
+  if (command->type == cm_connection &&
+      (command->value.Connection->connector == AND_AND || command->value.Connection->connector == OR_OR) &&
+      should_suppress_fork (command->value.Connection->second))
+    {
+      command->value.Connection->second->flags |= CMD_NO_FORK;
+      command->value.Connection->second->value.Simple->flags |= CMD_NO_FORK;
+    }
+}
+     
 /* How to force parse_and_execute () to clean up after itself. */
 void
 parse_and_execute_cleanup ()
@@ -226,6 +253,10 @@ parse_and_execute (string, from_file, flags)
   code = should_jump_to_top_level = 0;
   last_result = EXECUTION_SUCCESS;
 
+  /* We need to reset enough of the token state so we can start fresh. */
+  if (current_token == yacc_EOF)
+    current_token = '\n';		/* reset_parser() ? */
+
   with_input_from_string (string, from_file);
   while (*(bash_input.location.string))
     {
@@ -353,18 +384,13 @@ parse_and_execute (string, from_file, flags)
 	       * THEN
 	       *   tell the execution code that we don't need to fork
 	       */
-	      if (startup_state == 2 && parse_and_execute_level == 1 &&
-		  running_trap == 0 &&
-		  *bash_input.location.string == '\0' &&
-		  command->type == cm_simple &&
-		  signal_is_trapped (EXIT_TRAP) == 0 &&
-		  command->redirects == 0 && command->value.Simple->redirects == 0 &&
-		  ((command->flags & CMD_TIME_PIPELINE) == 0) &&
-		  ((command->flags & CMD_INVERT_RETURN) == 0))
+	      if (should_suppress_fork (command))
 		{
 		  command->flags |= CMD_NO_FORK;
 		  command->value.Simple->flags |= CMD_NO_FORK;
 		}
+	      else if (command->type == cm_connection)
+		optimize_fork (command);
 #endif /* ONESHOT */
 
 	      /* See if this is a candidate for $( <file ). */
@@ -547,8 +573,16 @@ itrace("parse_string: longjmp executed: code = %d", code);
 
   run_unwind_frame (PS_TAG);
 
+  /* If we return < 0, the caller (xparse_dolparen) will jump_to_top_level for
+     us, after doing cleanup */
   if (should_jump_to_top_level)
-    jump_to_top_level (code);
+    {
+      if (parse_and_execute_level == 0)
+	top_level_cleanup ();
+      if (code == DISCARD)
+	return -DISCARD;
+      jump_to_top_level (code);
+    }
 
   return (nc);
 }
@@ -634,7 +668,7 @@ evalstring (string, from_file, flags)
       if (rcatch && return_catch_flag)
 	{
 	  return_catch_value = r;
-	  longjmp (return_catch, 1);
+	  sh_longjmp (return_catch, 1);
 	}
     }
     

@@ -204,6 +204,12 @@ bash_history_inhibit_expansion (string, i)
      char *string;
      int i;
 {
+  int t;
+  char hx[2];
+
+  hx[0] = history_expansion_char;
+  hx[1] = '\0';
+
   /* The shell uses ! as a pattern negation character in globbing [...]
      expressions, so let those pass without expansion. */
   if (i > 0 && (string[i - 1] == '[') && member (']', string + i + 1))
@@ -220,6 +226,11 @@ bash_history_inhibit_expansion (string, i)
   else if (extended_glob && i > 1 && string[i+1] == '(' && member (')', string + i + 2))
     return (1);
 #endif
+
+  /* Make sure the history expansion should not be skipped by quoting or
+     command/process substitution. */
+  else if ((t = skip_to_delim (string, 0, hx, SD_NOJMP|SD_HISTEXP)) > 0 && t > i)
+    return (1);
   else
     return (0);
 }
@@ -290,8 +301,13 @@ load_history ()
   if (hf && *hf && file_exists (hf))
     {
       read_history (hf);
+      /* We have read all of the lines from the history file, even if we
+	 read more lines than $HISTSIZE.  Remember the total number of lines
+	 we read so we don't count the last N lines as new over and over
+	 again. */
+      history_lines_in_file = history_lines_read_from_file;
       using_history ();
-      history_lines_in_file = where_history ();
+      /* history_lines_in_file = where_history () + history_base - 1; */
     }
 }
 
@@ -300,6 +316,7 @@ bash_clear_history ()
 {
   clear_history ();
   history_lines_this_session = 0;
+  /* XXX - reset history_lines_read_from_file? */
 }
 
 /* Delete and free the history list entry at offset I. */
@@ -377,7 +394,7 @@ maybe_append_history (filename)
   struct stat buf;
 
   result = EXECUTION_SUCCESS;
-  if (history_lines_this_session && (history_lines_this_session <= where_history ()))
+  if (history_lines_this_session > 0 && (history_lines_this_session <= where_history ()))
     {
       /* If the filename was supplied, then create it if necessary. */
       if (stat (filename, &buf) == -1 && errno == ENOENT)
@@ -391,9 +408,14 @@ maybe_append_history (filename)
 	  close (fd);
 	}
       result = append_history (history_lines_this_session, filename);
+      /* Pretend we already read these lines from the file because we just
+	 added them */
       history_lines_in_file += history_lines_this_session;
       history_lines_this_session = 0;
     }
+  else
+    history_lines_this_session = 0;	/* reset if > where_history() */
+
   return (result);
 }
 
@@ -406,7 +428,7 @@ maybe_save_shell_history ()
   char *hf;
 
   result = 0;
-  if (history_lines_this_session)
+  if (history_lines_this_session > 0)
     {
       hf = get_string_value ("HISTFILE");
 
@@ -433,7 +455,8 @@ maybe_save_shell_history ()
 	  else
 	    {
 	      result = write_history (hf);
-	      history_lines_in_file = history_lines_this_session;
+	      history_lines_in_file = history_lines_written_to_file;
+	      /* history_lines_in_file = where_history () + history_base - 1; */
 	    }
 	  history_lines_this_session = 0;
 
@@ -532,6 +555,7 @@ pre_process_line (line, print_changes, addit)
 	  if (hist_verify && expanded == 1)
 	    {
 	      re_edit (history_value);
+	      free (history_value);
 	      return ((char *)NULL);
 	    }
 #    endif
@@ -706,11 +730,24 @@ check_add_history (line, force)
 #if defined (SYSLOG_HISTORY)
 #define SYSLOG_MAXLEN 600
 
+extern char *shell_name;
+
+#ifndef OPENLOG_OPTS
+#define OPENLOG_OPTS 0
+#endif
+
 void
 bash_syslog_history (line)
      const char *line;
 {
   char trunc[SYSLOG_MAXLEN];
+  static int first = 1;
+
+  if (first)
+    {
+      openlog (shell_name, OPENLOG_OPTS, SYSLOG_FACILITY);
+      first = 0;
+    }
 
   if (strlen(line) < SYSLOG_MAXLEN)
     syslog (SYSLOG_FACILITY|SYSLOG_LEVEL, "HISTORY: PID=%d UID=%d %s", getpid(), current_user.uid, line);

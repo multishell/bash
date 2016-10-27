@@ -1,11 +1,11 @@
 dnl
-dnl Configure script for bash-4.3
+dnl Configure script for bash-4.4
 dnl
 dnl report bugs to chet@po.cwru.edu
 dnl
 dnl Process this file with autoconf to produce a configure script.
 
-# Copyright (C) 1987-2013 Free Software Foundation, Inc.
+# Copyright (C) 1987-2015 Free Software Foundation, Inc.
 
 #
 #   This program is free software: you can redistribute it and/or modify
@@ -21,10 +21,10 @@ dnl Process this file with autoconf to produce a configure script.
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-AC_REVISION([for Bash 4.3, version 4.063])dnl
+AC_REVISION([for Bash 4.4, version 4.073])dnl
 
-define(bashvers, 4.3)
-define(relstatus, release)
+define(bashvers, 4.4)
+define(relstatus, beta)
 
 AC_INIT([bash], bashvers-relstatus, [bug-bash@gnu.org])
 
@@ -193,6 +193,7 @@ opt_casemod_expansions=yes
 opt_extglob_default=no
 opt_dircomplete_expand_default=no
 opt_globascii_default=no
+opt_function_import=yes
 
 dnl options that affect how bash is compiled and linked
 opt_static_link=no
@@ -234,6 +235,7 @@ AC_ARG_ENABLE(disabled-builtins, AC_HELP_STRING([--enable-disabled-builtins], [a
 AC_ARG_ENABLE(dparen-arithmetic, AC_HELP_STRING([--enable-dparen-arithmetic], [include ((...)) command]), opt_dparen_arith=$enableval)
 AC_ARG_ENABLE(extended-glob, AC_HELP_STRING([--enable-extended-glob], [include ksh-style extended pattern matching]), opt_extended_glob=$enableval)
 AC_ARG_ENABLE(extended-glob-default, AC_HELP_STRING([--enable-extended-glob-default], [force extended pattern matching to be enabled by default]), opt_extglob_default=$enableval)
+AC_ARG_ENABLE(function-import, AC_HELP_STRING([--enable-function-import], [allow bash to import exported function definitions by default]), opt_function_import=$enableval)
 AC_ARG_ENABLE(glob-asciiranges-default, AC_HELP_STRING([--enable-glob-asciiranges-default], [force bracket range expressions in pattern matching to use the C locale by default]), opt_globascii_default=$enableval)
 AC_ARG_ENABLE(help-builtin, AC_HELP_STRING([--enable-help-builtin], [include the help builtin]), opt_help=$enableval)
 AC_ARG_ENABLE(history, AC_HELP_STRING([--enable-history], [turn on command history]), opt_history=$enableval)
@@ -357,6 +359,9 @@ AC_DEFINE(GLOBASCII_DEFAULT, 1)
 else
 AC_DEFINE(GLOBASCII_DEFAULT, 0)
 fi
+if test $opt_function_import = yes; then
+AC_DEFINE(FUNCTION_IMPORT)
+fi
 
 if test $opt_memscramble = yes; then
 AC_DEFINE(MEMSCRAMBLE)
@@ -402,6 +407,14 @@ AC_SUBST(HELPDIRDEFINE)
 AC_SUBST(HELPINSTALL)
 AC_SUBST(HELPFILES_TARGET)
 AC_SUBST(HELPSTRINGS)
+
+dnl We want these before the checks, so the checks can modify their values.
+if test -z "$CFLAGS"; then
+	AUTO_CFLAGS="-g ${GCC+-O2} ${GCC+-Wno-parentheses}"
+	AUTO_LDFLAGS="-g ${GCC+-O2}"
+else
+	AUTO_CFLAGS= AUTO_LDFLAGS=
+fi
 
 echo ""
 echo "Beginning configuration for bash-$BASHVERS-$RELSTATUS for ${host_cpu}-${host_vendor}-${host_os}"
@@ -460,17 +473,14 @@ AC_SUBST(SIGNAMES_O)
 
 dnl END changes for cross-building
 
-dnl We want these before the checks, so the checks can modify their values.
-if test -z "$CFLAGS"; then
-	AUTO_CFLAGS="-g ${GCC+-O2}"
-	AUTO_LDFLAGS="-g ${GCC+-O2}"
-else
-	AUTO_CFLAGS= AUTO_LDFLAGS=
-fi
-
 dnl default values
 CFLAGS=${CFLAGS-"$AUTO_CFLAGS"}
 # LDFLAGS=${LDFLAGS="$AUTO_LDFLAGS"}	# XXX
+
+# turn off paren warnings in gcc
+if test "$GCC" = yes && test -n "$DEBUG"; then
+	CFLAGS="$CFLAGS -Wno-parentheses -Wno-format-security"
+fi
 
 dnl handle options that alter how bash is compiled and linked
 dnl these must come after the test for cc/gcc
@@ -706,7 +716,7 @@ AC_CHECK_HEADERS(unistd.h stdlib.h stdarg.h varargs.h limits.h string.h \
 		 memory.h locale.h termcap.h termio.h termios.h dlfcn.h \
 		 stdbool.h stddef.h stdint.h netdb.h pwd.h grp.h strings.h \
 		 regex.h syslog.h ulimit.h)
-AC_CHECK_HEADERS(sys/pte.h sys/stream.h sys/select.h sys/file.h \
+AC_CHECK_HEADERS(sys/pte.h sys/stream.h sys/select.h sys/file.h sys/ioctl.h \
 		 sys/resource.h sys/param.h sys/socket.h sys/stat.h \
 		 sys/time.h sys/times.h sys/types.h sys/wait.h)
 AC_CHECK_HEADERS(netinet/in.h arpa/inet.h)
@@ -721,6 +731,7 @@ AC_CHECK_HEADER(sys/ptem.h, , ,[[
 
 dnl special checks for libc functions
 AC_FUNC_ALLOCA
+AC_FUNC_CHOWN
 AC_FUNC_GETPGRP
 AC_FUNC_SETVBUF_REVERSED
 AC_FUNC_VPRINTF
@@ -766,7 +777,7 @@ AC_CHECK_FUNC(mkfifo,AC_DEFINE(HAVE_MKFIFO),AC_DEFINE(MKFIFO_MISSING))
 dnl checks for system calls
 AC_CHECK_FUNCS(dup2 eaccess fcntl getdtablesize getgroups gethostname \
 		getpagesize getpeername getrlimit getrusage gettimeofday \
-		kill killpg lstat readlink sbrk select setdtablesize \
+		kill killpg lstat pselect readlink sbrk select setdtablesize \
 		setitimer tcgetpgrp uname ulimit waitpid)
 AC_REPLACE_FUNCS(rename)
 
@@ -787,6 +798,7 @@ AC_REPLACE_FUNCS(dprintf)
 AC_REPLACE_FUNCS(strchrnul)
 AC_REPLACE_FUNCS(strdup)
 
+AC_CHECK_HEADERS(libaudit.h)
 AC_CHECK_DECLS([AUDIT_USER_TTY],,, [[#include <linux/audit.h>]])
 
 AC_CHECK_DECLS([confstr])
@@ -1085,7 +1097,7 @@ solaris2*)	LOCAL_CFLAGS=-DSOLARIS ;;
 lynxos*)	LOCAL_CFLAGS=-DRECYCLES_PIDS ;;
 linux*)		LOCAL_LDFLAGS=-rdynamic		 # allow dynamic loading
 		case "`uname -r`" in
-		2.[[456789]]*|3*)	AC_DEFINE(PGRP_PIPE) ;;
+		2.[[456789]]*|[[34]]*)	AC_DEFINE(PGRP_PIPE) ;;
 		esac ;;
 *qnx6*)		LOCAL_CFLAGS="-Dqnx -Dqnx6" LOCAL_LIBS="-lncurses" ;;
 *qnx*)		LOCAL_CFLAGS="-Dqnx -F -3s" LOCAL_LDFLAGS="-3s" LOCAL_LIBS="-lunix -lncurses" ;;
@@ -1180,6 +1192,16 @@ AC_SUBST(BUILD_DIR)
 AC_SUBST(datarootdir)
 AC_SUBST(localedir)
 
+# directory where we install dynamically loadable builtins
+if test -z "$loadablesdir"; then
+	loadablesdir='${libdir}/bash'
+fi
+AC_SUBST(loadablesdir)
+if test -z "$headersdir"; then
+	headersdir='$(includedir)/$(PACKAGE_NAME)'
+fi
+AC_SUBST(headersdir)
+
 AC_SUBST(YACC)
 AC_SUBST(AR)
 AC_SUBST(ARFLAGS)
@@ -1205,7 +1227,9 @@ AC_OUTPUT([Makefile builtins/Makefile lib/readline/Makefile lib/glob/Makefile \
 	  lib/intl/Makefile \
 	  lib/malloc/Makefile lib/sh/Makefile lib/termcap/Makefile \
 	  lib/tilde/Makefile doc/Makefile support/Makefile po/Makefile.in \
-	  examples/loadables/Makefile examples/loadables/perl/Makefile],
+	  examples/loadables/Makefile examples/loadables/Makefile.inc \
+	  examples/loadables/perl/Makefile \
+	  support/bash.pc],
 [
 # Makefile uses this timestamp file to record whether config.h is up to date.
 echo timestamp > stamp-h

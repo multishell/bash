@@ -41,6 +41,7 @@
 #include "shell.h"
 #include "flags.h"
 #include <y.tab.h>	/* use <...> so we pick it up from the build directory */
+#include "input.h"
 
 #include "shmbutil.h"
 
@@ -51,6 +52,7 @@ extern int printf __P((const char *, ...));	/* Yuck.  Double yuck. */
 #endif
 
 extern int indirection_level;
+extern int posixly_correct;
 
 static int indentation;
 static int indentation_amount = 4;
@@ -802,7 +804,7 @@ print_if_command (if_command)
   newline ("fi");
 }
 
-#if defined (DPAREN_ARITHMETIC)
+#if defined (DPAREN_ARITHMETIC) || defined (ARITH_FOR_COMMAND)
 void
 print_arith_command (arith_cmd_list)
      WORD_LIST *arith_cmd_list;
@@ -1275,7 +1277,11 @@ print_function_def (func)
   REDIRECT *func_redirects;
 
   func_redirects = NULL;
-  cprintf ("function %s () \n", func->name->word);
+  /* When in posix mode, print functions as posix specifies them. */
+  if (posixly_correct == 0)
+    cprintf ("function %s () \n", func->name->word);
+  else
+    cprintf ("%s () \n", func->name->word);
   add_unwind_protect (reset_locals, 0);
 
   indent (indentation);
@@ -1334,7 +1340,11 @@ named_function_string (name, command, flags)
   deferred_heredocs = 0;
 
   if (name && *name)
-    cprintf ("%s ", name);
+    {
+      if (find_reserved_word (name) >= 0)
+	cprintf ("function ");
+      cprintf ("%s ", name);
+    }
 
   cprintf ("() ");
 
