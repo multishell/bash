@@ -46,6 +46,7 @@
 #include "shell.h"
 #include "jobs.h"
 #include "execute_cmd.h"
+#include "trap.h"
 
 #include "builtins/builtext.h"	/* for wait_builtin */
 
@@ -83,6 +84,8 @@ extern sigset_t top_level_mask;
 extern procenv_t wait_intr_buf;
 extern int wait_intr_flag;
 extern int wait_signal_received;
+
+extern void set_original_signal __P((int, SigHandler *));
 
 volatile pid_t last_made_pid = NO_PID;
 volatile pid_t last_asynchronous_pid = NO_PID;
@@ -416,6 +419,7 @@ reap_dead_jobs ()
 }
 
 /* Initialize the job control mechanism, and set up the tty stuff. */
+int
 initialize_job_control (force)
      int force;
 {
@@ -423,6 +427,7 @@ initialize_job_control (force)
 
   if (interactive)
     get_tty_state ();
+  return 0;
 }
 
 /* Setup this shell to handle C-C, etc. */
@@ -634,12 +639,13 @@ get_original_tty_job_signals ()
 /* Wait for a single pid (PID) and return its exit status.  Called by
    the wait builtin. */
 int
-wait_for_single_pid (pid)
+wait_for_single_pid (pid, flags)
      pid_t pid;
+     int flags;
 {
   pid_t got_pid;
   WAIT status;
-  int pstatus, flags;
+  int pstatus;
 
   pstatus = find_status_by_pid (pid);
 
@@ -927,6 +933,7 @@ static TTYSTRUCT shell_tty_info;
 static int got_tty_state;
 
 /* Fill the contents of shell_tty_info with the current tty info. */
+int
 get_tty_state ()
 {
   int tty;
@@ -939,6 +946,7 @@ get_tty_state ()
       if (check_window_size)
 	get_new_window_size (0, (int *)0, (int *)0);
     }
+  return 0;
 }
 
 /* Make the current tty use the state in shell_tty_info. */
@@ -958,10 +966,12 @@ set_tty_state ()
 }
 
 /* Give the terminal to PGRP.  */
+int
 give_terminal_to (pgrp, force)
      pid_t pgrp;
      int force;
 {
+  return 0;
 }
 
 /* Stop a pipeline. */
@@ -986,6 +996,14 @@ stop_making_children ()
   already_making_children = 0;
 }
 
+/* The name is kind of a misnomer, but it's what the job control code uses. */
+void
+without_job_control ()
+{
+  stop_making_children ();
+  last_made_pid = NO_PID;	/* XXX */
+}
+
 int
 get_job_by_pid (pid, block)
      pid_t pid;
@@ -1008,6 +1026,7 @@ describe_pid (pid)
 int
 freeze_jobs_list ()
 {
+  return 0;
 }
 
 void

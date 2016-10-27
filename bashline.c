@@ -1,6 +1,6 @@
 /* bashline.c -- Bash's interface to the readline library. */
 
-/* Copyright (C) 1987-2013 Free Software Foundation, Inc.
+/* Copyright (C) 1987-2016 Free Software Foundation, Inc.
 
    This file is part of GNU Bash, the Bourne Again SHell.
 
@@ -54,6 +54,7 @@
 #include "pathexp.h"
 #include "shmbutil.h"
 #include "trap.h"
+#include "flags.h"
 
 #if defined (HAVE_MBSTR_H) && defined (HAVE_MBSCHR)
 #  include <mbstr.h>		/* mbschr */
@@ -980,9 +981,6 @@ edit_and_execute_command (count, c, editing_mode, edit_command)
   metaval = rl_variable_value ("input-meta");
   metaflag = RL_BOOLEAN_VARIABLE_VALUE (metaval);
   
-  /* Now, POSIX.1-2001 and SUSv3 say that the commands executed from the
-     temporary file should be placed into the history.  We don't do that
-     yet. */
   if (rl_deprep_term_function)
     (*rl_deprep_term_function) ();
   save_parser_state (&ps);
@@ -1281,7 +1279,7 @@ check_redir (ti)
   /* Handle the two character tokens `>&', `<&', and `>|'.
      We are not in a command position after one of these. */
   this_char = rl_line_buffer[ti];
-  prev_char = rl_line_buffer[ti - 1];
+  prev_char = (ti > 0) ? rl_line_buffer[ti - 1] : 0;
 
   if ((this_char == '&' && (prev_char == '<' || prev_char == '>')) ||
       (this_char == '|' && prev_char == '>'))
@@ -1648,6 +1646,11 @@ bash_default_completion (text, start, end, qc, compflags)
       else
 	{
 	  matches = rl_completion_matches (text, variable_completion_function);
+	  /* If a single match, see if it expands to a directory name and append
+	     a slash if it does.  This requires us to expand the variable name,
+	     so we don't want to display errors if the variable is unset.  This
+	     can happen with dynamic variables whose value has never been
+	     requested. */
 	  if (matches && matches[0] && matches[1] == 0)
 	    {
 	      t = savestring (matches[0]);
@@ -1842,7 +1845,9 @@ command_word_completion_function (hint_text, state)
       if (globpat || absolute_program (hint_text))
 	{
 	  /* Perform tilde expansion on what's passed, so we don't end up
-	     passing filenames with tildes directly to stat(). */
+	     passing filenames with tildes directly to stat().  The rest of
+	     the shell doesn't do variable expansion on the word following
+	     the tilde, so we don't do it here even if direxpand is set. */
 	  if (*hint_text == '~')
 	    {
 	      hint = bash_tilde_expand (hint_text, 0);
@@ -1855,6 +1860,11 @@ command_word_completion_function (hint_text, state)
 		  free (directory_part);
 		  directory_part = (char *)NULL;
 		}
+	    }
+	  else if (dircomplete_expand)
+	    {
+	      hint = savestring (hint_text);
+	      bash_directory_completion_hook (&hint);
 	    }
 	  else
 	    hint = savestring (hint_text);
@@ -3124,6 +3134,7 @@ bash_filename_stat_hook (dirname)
 {
   char *local_dirname, *new_dirname, *t;
   int should_expand_dirname, return_value;
+  int global_nounset;
   WORD_LIST *wl;
   struct stat sb;
 
@@ -3140,7 +3151,12 @@ bash_filename_stat_hook (dirname)
   if (should_expand_dirname)  
     {
       new_dirname = savestring (local_dirname);
-      wl = expand_prompt_string (new_dirname, 0, W_NOCOMSUB);	/* does the right thing */
+      /* no error messages, and expand_prompt_string doesn't longjmp so we don't
+	 have to worry about restoring this setting. */
+      global_nounset = unbound_vars_is_error;
+      unbound_vars_is_error = 0;
+      wl = expand_prompt_string (new_dirname, 0, W_NOCOMSUB|W_COMPLETE);	/* does the right thing */
+      unbound_vars_is_error = global_nounset;
       if (wl)
 	{
 	  free (new_dirname);
@@ -3234,7 +3250,7 @@ bash_directory_completion_hook (dirname)
   if (should_expand_dirname)  
     {
       new_dirname = savestring (local_dirname);
-      wl = expand_prompt_string (new_dirname, 0, W_NOCOMSUB);	/* does the right thing */
+      wl = expand_prompt_string (new_dirname, 0, W_NOCOMSUB|W_COMPLETE);	/* does the right thing */
       if (wl)
 	{
 	  *dirname = string_list (wl);
@@ -4080,8 +4096,12 @@ bash_execute_unix_command (count, key)
   ce = rl_get_termcap ("ce");
   if (ce)	/* clear current line */
     {
+#if 0
       fprintf (rl_outstream, "\r");
       tputs (ce, 1, putx);
+#else
+      rl_clear_visible_line ();
+#endif
       fflush (rl_outstream);
     }
   else
@@ -4119,8 +4139,8 @@ bash_execute_unix_command (count, key)
 	}
     }      
 
-  unbind_variable ("READLINE_LINE");
-  unbind_variable ("READLINE_POINT");
+  check_unbind_variable ("READLINE_LINE");
+  check_unbind_variable ("READLINE_POINT");
   array_needs_making = 1;
 
   /* and restore the readline buffer and display after command execution. */
