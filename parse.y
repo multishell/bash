@@ -3920,11 +3920,11 @@ eof_error:
 		{
 		  nestret = substring (ret, lex_firstind, retind);
 		  heredelim = string_quote_removal (nestret, 0);
-		  free (nestret);
 		  hdlen = STRLEN(heredelim);
 /*itrace("parse_comsub:%d: found here doc delimiter `%s' (%d)", line_number, heredelim, hdlen);*/
 		  if (STREQ (heredelim, nestret) == 0)
 		    tflags |= LEX_QUOTEDDOC;
+		  free (nestret);
 		}
 	      if (ch == '\n')
 		{
@@ -5459,7 +5459,8 @@ decode_prompt_string (string)
   struct dstack save_dstack;
   int last_exit_value, last_comsub_pid;
 #if defined (PROMPT_STRING_DECODE)
-  int result_size, result_index;
+  size_t result_size;
+  int result_index;
   int c, n, i;
   char *temp, *t_host, octal_string[4];
   struct tm *tm;  

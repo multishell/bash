@@ -122,9 +122,24 @@ extern int errno;
 
 /* Evaluates to 1 if this is one of the shell's special variables. */
 #define SPECIAL_VAR(name, wi) \
- ((DIGIT (*name) && all_digits (name)) || \
+ (*name && ((DIGIT (*name) && all_digits (name)) || \
       (name[1] == '\0' && (sh_syntaxtab[(unsigned char)*name] & CSPECVAR)) || \
-      (wi && name[2] == '\0' && VALID_INDIR_PARAM (name[1])))
+      (wi && name[2] == '\0' && VALID_INDIR_PARAM (name[1]))))
+
+/* This can be used by all of the *_extract_* functions that have a similar
+   structure.  It can't just be wrapped in a do...while(0) loop because of
+   the embedded `break'. The dangling else accommodates a trailing semicolon;
+   we could also put in a do ; while (0) */
+
+   
+#define CHECK_STRING_OVERRUN(oind, ind, len, ch) \
+  if (ind >= len) \
+    { \
+      oind = len; \
+      ch = 0; \
+      break; \
+    } \
+  else \
 
 /* An expansion function that takes a string and a quoted flag and returns
    a WORD_LIST *.  Used as the type of the third argument to
@@ -705,11 +720,13 @@ unquoted_substring (substr, string)
 INLINE char *
 sub_append_string (source, target, indx, size)
      char *source, *target;
-     int *indx, *size;
+     int *indx;
+     size_t *size;
 {
   if (source)
     {
-      int srclen, n;
+      int n;
+      size_t srclen;
 
       srclen = STRLEN (source);
       if (srclen >= (int)(*size - *indx))
@@ -735,8 +752,9 @@ sub_append_string (source, target, indx, size)
 char *
 sub_append_number (number, target, indx, size)
      intmax_t number;
-     int *indx, *size;
      char *target;
+     int *indx;
+     size_t *size;
 {
   char *temp;
 
@@ -1027,6 +1045,9 @@ skip_double_quoted (string, slen, sind, flags)
 	    ret = extract_command_subst (string, &si, SX_NOALLOC|(flags&SX_COMPLETE));
 	  else
 	    ret = extract_dollar_brace_string (string, &si, Q_DOUBLE_QUOTES, SX_NOALLOC);
+
+	  /* These can consume the entire string if they are unterminated */
+	  CHECK_STRING_OVERRUN (i, si, slen, c);
 
 	  i = si + 1;
 	  continue;
@@ -1516,6 +1537,9 @@ extract_dollar_brace_string (string, sindex, quoted, flags)
 	{
 	  si = i + 1;
 	  t = string_extract (string, &si, "`", flags|SX_NOALLOC);
+
+	  CHECK_STRING_OVERRUN (i, si, slen, c);
+    
 	  i = si + 1;
 	  continue;
 	}
@@ -1568,6 +1592,8 @@ extract_dollar_brace_string (string, sindex, quoted, flags)
         dolbrace_state = DOLBRACE_QUOTE;
       else if (dolbrace_state == DOLBRACE_PARAM && c == ',' && (i - *sindex) > 1)
         dolbrace_state = DOLBRACE_QUOTE;
+      /* This is intended to handle all of the [:]op expansions and the substring/
+	 length/pattern removal/pattern substitution expansions. */
       else if (dolbrace_state == DOLBRACE_PARAM && strchr ("#%^,~:-=?+/", c) != 0)
 	dolbrace_state = DOLBRACE_OP;
       else if (dolbrace_state == DOLBRACE_OP && strchr ("#%^,~:-=?+/", c) == 0)
@@ -1735,6 +1761,9 @@ skip_matched_pair (string, start, open, close, flags)
 	    temp = extract_delimited_string (ss, &si, "$(", "(", ")", SX_NOALLOC|SX_COMMAND); /* ) */
 	  else
 	    temp = extract_dollar_brace_string (ss, &si, 0, SX_NOALLOC);
+
+	  CHECK_STRING_OVERRUN (i, si, slen, c);
+
 	  i = si;
 	  if (string[i] == '\0')	/* don't increment i past EOS in loop */
 	    break;
@@ -2251,7 +2280,10 @@ split_at_delims (string, slen, delims, sentinel, flags, nwp, cwp)
   for (i = 0; member (string[i], d) && spctabnl (string[i]); i++)
     ;
   if (string[i] == '\0')
-    return (ret);
+    {
+      FREE (d2);
+      return (ret);
+    }
 
   ts = i;
   nw = 0;
@@ -2375,7 +2407,7 @@ string_list_internal (list, sep)
 {
   register WORD_LIST *t;
   char *result, *r;
-  int word_len, sep_len, result_size;
+  size_t word_len, sep_len, result_size;
 
   if (list == 0)
     return ((char *)NULL);
@@ -4211,7 +4243,7 @@ remove_upattern (param, pattern, op)
      char *param, *pattern;
      int op;
 {
-  register int len;
+  register size_t len;
   register char *end;
   register char *p, *ret, c;
 
@@ -4423,7 +4455,8 @@ match_upattern (string, pat, mtype, sp, ep)
      int mtype;
      char **sp, **ep;
 {
-  int c, len, mlen;
+  int c, mlen;
+  size_t len;
   register char *p, *p1, *npat;
   char *end;
   int n1;
@@ -4439,14 +4472,36 @@ match_upattern (string, pat, mtype, sp, ep)
   len = STRLEN (pat);
   if (pat[0] != '*' || (pat[0] == '*' && pat[1] == LPAREN && extended_glob) || pat[len - 1] != '*')
     {
+      int unescaped_backslash;
+      char *pp;
+
       p = npat = (char *)xmalloc (len + 3);
       p1 = pat;
       if (*p1 != '*' || (*p1 == '*' && p1[1] == LPAREN && extended_glob))
 	*p++ = '*';
       while (*p1)
 	*p++ = *p1++;
-      if (p1[-1] != '*' || p[-2] == '\\')
+#if 1
+      /* Need to also handle a pattern that ends with an unescaped backslash.
+	 For right now, we ignore it because the pattern matching code will
+	 fail the match anyway */
+      /* If the pattern ends with a `*' we leave it alone if it's preceded by
+	 an even number of backslashes, but if it's escaped by a backslash
+	 we need to add another `*'. */
+      if (p1[-1] == '*' && (unescaped_backslash = p1[-2] == '\\'))
+	{
+	  pp = p1 - 3;
+	  while (pp >= pat && *pp-- == '\\')
+	    unescaped_backslash = 1 - unescaped_backslash;
+	  if (unescaped_backslash)
+	    *p++ = '*';
+	}
+      else if (p1[-1] != '*')
 	*p++ = '*';
+#else 
+      if (p1[-1] != '*' || p1[-2] == '\\')
+	*p++ = '*';
+#endif
       *p = '\0';
     }
   else
@@ -4580,14 +4635,31 @@ match_wpattern (wstring, indices, wstrlen, wpat, mtype, sp, ep)
   len = wcslen (wpat);
   if (wpat[0] != L'*' || (wpat[0] == L'*' && wpat[1] == WLPAREN && extended_glob) || wpat[len - 1] != L'*')
     {
+      int unescaped_backslash;
+      wchar_t *wpp;
+
       wp = nwpat = (wchar_t *)xmalloc ((len + 3) * sizeof (wchar_t));
       wp1 = wpat;
       if (*wp1 != L'*' || (*wp1 == '*' && wp1[1] == WLPAREN && extended_glob))
 	*wp++ = L'*';
       while (*wp1 != L'\0')
 	*wp++ = *wp1++;
+#if 1
+      /* See comments above in match_upattern. */
+      if (wp1[-1] == L'*' && (unescaped_backslash = wp1[-2] == L'\\'))
+        {
+          wpp = wp1 - 3;
+          while (wpp >= wpat && *wpp-- == L'\\')
+            unescaped_backslash = 1 - unescaped_backslash;
+          if (unescaped_backslash)
+            *wp++ = L'*';
+        }
+      else if (wp1[-1] != L'*')
+        *wp++ = L'*';
+#else      
       if (wp1[-1] != L'*' || wp1[-2] == L'\\')
         *wp++ = L'*';
+#endif
       *wp = '\0';
     }
   else
@@ -7182,7 +7254,8 @@ mb_substring (string, s, e)
      int s, e;
 {
   char *tt;
-  int start, stop, i, slen;
+  int start, stop, i;
+  size_t slen;
   DECLARE_MBSTATE;
 
   start = 0;
@@ -7323,7 +7396,8 @@ pat_subst (string, pat, rep, mflags)
      int mflags;
 {
   char *ret, *s, *e, *str, *rstr, *mstr;
-  int rsize, rptr, l, replen, mtype, rxpand, rslen, mlen;
+  int rptr, mtype, rxpand, mlen;
+  size_t rsize, l, replen, rslen;
 
   if (string  == 0)
     return (savestring (""));
@@ -7393,6 +7467,7 @@ pat_subst (string, pat, rep, mflags)
 	    mstr[x] = s[x];
 	  mstr[mlen] = '\0';
 	  rstr = strcreplace (rep, '&', mstr, 0);
+	  free (mstr);
 	  rslen = strlen (rstr);
         }
       else
@@ -8951,7 +9026,7 @@ expand_word_internal (word, quoted, isexp, contains_dollar_at, expanded_somethin
   char *istring;
 
   /* The current size of the above object. */
-  int istring_size;
+  size_t istring_size;
 
   /* Index into ISTRING. */
   int istring_index;

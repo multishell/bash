@@ -567,20 +567,32 @@ handle_error:
       if (errno != EINTR)
 	return (RL_ISSTATE (RL_STATE_READCMD) ? READERR : EOF);
       /* fatal signals of interest */
+#if defined (SIGHUP)
       else if (_rl_caught_signal == SIGHUP || _rl_caught_signal == SIGTERM)
+#else
+      else if (_rl_caught_signal == SIGTERM)
+#endif
 	return (RL_ISSTATE (RL_STATE_READCMD) ? READERR : EOF);
       /* keyboard-generated signals of interest */
+#if defined (SIGQUIT)
       else if (_rl_caught_signal == SIGINT || _rl_caught_signal == SIGQUIT)
+#else
+      else if (_rl_caught_signal == SIGINT)
+#endif
         RL_CHECK_SIGNALS ();
       /* non-keyboard-generated signals of interest */
+#if defined (SIGWINCH)
       else if (_rl_caught_signal == SIGWINCH)
 	RL_CHECK_SIGNALS ();
+#endif /* SIGWINCH */
+#if defined (SIGALRM)
       else if (_rl_caught_signal == SIGALRM
-#if defined (SIGVTALRM)
+#  if defined (SIGVTALRM)
 		|| _rl_caught_signal == SIGVTALRM
-#endif
+#  endif
 	      )
         RL_CHECK_SIGNALS ();
+#endif  /* SIGALRM */
 
       if (rl_signal_event_hook)
 	(*rl_signal_event_hook) ();
