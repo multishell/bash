@@ -2273,7 +2273,7 @@ MAKE = make
 
 /* Define USE_GNU_TERMCAP if you want to use the GNU termcap library
    instead of your system termcap library. */
-/* #  define USE_GNU_TERMCAP */
+#  define USE_GNU_TERMCAP
 
 /* Define HAVE_SETLINEBUF if your machine has the setlinebuf ()
    stream library call.  Otherwise, setvbuf () will be used.  If
@@ -2283,7 +2283,7 @@ MAKE = make
 
 /* Define HAVE_VFPRINTF if your machines has the vfprintf () library
    call.  Otherwise, printf will be used.  */
-#  define HAVE_VFPRINTF
+#  undef HAVE_VFPRINTF
 
 /* Define USE_VFPRINTF_EMULATION if you want to use the BSD-compatible
    vfprintf() emulation in vprint.c. */
