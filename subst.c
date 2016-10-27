@@ -6795,6 +6795,12 @@ add_string:
 	  if (temp && *temp && t_index > 0)
 	    {
 	      temp1 = bash_tilde_expand (temp, tflag);
+	      if  (temp1 && *temp1 == '~' && STREQ (temp, temp1))
+		{
+		  FREE (temp);
+		  FREE (temp1);
+		  goto add_character;		/* tilde expansion failed */
+		}
 	      free (temp);
 	      temp = temp1;
 	      sindex += t_index;
