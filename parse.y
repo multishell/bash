@@ -1122,7 +1122,7 @@ pipeline:	pipeline '|' newline_list pipeline
 			  REDIRECTEE rd;
 			  REDIRECT *r;
 
-			  tc = $1;
+			  tc = $1->type == cm_simple ? (COMMAND *)$1->value.Simple : $1;
 			  rd.dest = 1;
 			  r = make_redirection (2, r_duplicating_output, rd);
 			  if (tc->redirects)
