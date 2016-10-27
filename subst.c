@@ -4622,7 +4622,8 @@ command_substitute (string, quoted)
 #if defined (JOB_CONTROL)
   set_sigchld_handler ();
   stop_making_children ();
-  pipeline_pgrp = old_pipeline_pgrp;
+  if (pid != 0)
+    pipeline_pgrp = old_pipeline_pgrp;
 #else
   stop_making_children ();
 #endif /* JOB_CONTROL */
