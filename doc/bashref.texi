@@ -961,8 +961,8 @@ If the shell option @code{nocasematch}
 (see the description of @code{shopt} in @ref{Bash Builtins})
 is enabled, the match is performed without regard to the case
 of alphabetic characters.
-The return value is 0 if the string matches or does not match
-the pattern, respectively, and 1 otherwise.
+The return value is 0 if the string matches (@samp{==}) or does not
+match (@samp{!=})the pattern, and 1 otherwise.
 Any part of the pattern may be quoted to force it to be matched as a
 string.
 
@@ -2598,7 +2598,7 @@ the command directly, without invoking another program.
 Builtin commands are necessary to implement functionality impossible
 or inconvenient to obtain with separate utilities.
 
-This section briefly the builtins which Bash inherits from
+This section briefly describes the builtins which Bash inherits from
 the Bourne Shell, as well as the builtin commands which are unique
 to or have been extended in Bash.
 
@@ -3833,7 +3833,7 @@ builtin command.
 @item ulimit
 @btindex ulimit
 @example
-ulimit [-acdflmnpstuvSH] [@var{limit}]
+ulimit [-acdfilmnpqstuvxSH] [@var{limit}]
 @end example
 @code{ulimit} provides control over the resources available to processes
 started by the shell, on systems that allow such control.  If an
@@ -3857,6 +3857,9 @@ The maximum size of a process's data segment.
 @item -f
 The maximum size of files created by the shell.
 
+@item -i
+The maximum number of pending signals.
+
 @item -l
 The maximum size that may be locked into memory.
 
@@ -3869,6 +3872,9 @@ The maximum number of open file descriptors.
 @item -p
 The pipe buffer size.
 
+@item -q
+The maximum number of bytes in POSIX message queues.
+
 @item -s
 The maximum stack size.
 
@@ -3880,6 +3886,9 @@ The maximum number of processes available to a single user.
 
 @item -v
 The maximum amount of virtual memory available to the process.
+
+@item -x
+The maximum number of file locks.
 
 @end table
 
@@ -4089,8 +4098,8 @@ shell will exit.
 Print shell input lines as they are read.
 
 @item -x
-Print a trace of simple commands, \fBfor\fP commands, \fBcase\fP
-commands, \fBselect\fP commands, and arithmetic \fBfor\fP commands
+Print a trace of simple commands, @code{for} commands, @code{case}
+commands, @code{select} commands, and arithmetic @code{for} commands
 and their arguments or associated word lists after they are
 expanded and before they are executed.  The value of the @env{PS4}
 variable is expanded and the resultant value is printed before
