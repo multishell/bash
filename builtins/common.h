@@ -33,8 +33,6 @@
 #define SEVAL_RESETLINE	0x010
 
 /* Flags for describe_command, shared between type.def and command.def */
-#define SEVAL_FUNCDEF	0x080		/* only allow function definitions */
-#define SEVAL_ONECMD	0x100		/* only allow a single command */
 #define CDESC_ALL		0x001	/* type -a */
 #define CDESC_SHORTDESC		0x002	/* command -V */
 #define CDESC_REUSABLE		0x004	/* command -v */
@@ -151,7 +149,7 @@ extern void set_var_attribute __P((char *, int, int));
 extern char *get_dirstack_from_string __P((char *));
 extern char *get_dirstack_element __P((intmax_t, int));
 extern void set_dirstack_element __P((intmax_t, int, char *));
-extern WORD_LIST *get_directory_stack __P((void));
+extern WORD_LIST *get_directory_stack __P((int));
 
 /* Functions from evalstring.c */
 extern int parse_and_execute __P((char *, const char *, int));

@@ -159,7 +159,5 @@ typedef struct _sh_parser_state_t {
 } sh_parser_state_t;
 
 /* Let's try declaring these here. */
-extern char *parser_remaining_input __P((void));
-
 extern sh_parser_state_t *save_parser_state __P((sh_parser_state_t *));
 extern void restore_parser_state __P((sh_parser_state_t *));
