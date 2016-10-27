@@ -137,7 +137,7 @@ unsigned char ifs_firstc;
 /* Extern functions and variables from different files. */
 extern int last_command_exit_value, last_command_exit_signal;
 extern int subshell_environment;
-extern int subshell_level;
+extern int subshell_level, parse_and_execute_level;
 extern int eof_encountered;
 extern int return_catch_flag, return_catch_value;
 extern pid_t dollar_dollar_pid;
@@ -7672,7 +7672,9 @@ exp_jump_to_top_level (v)
   expand_no_split_dollar_star = 0;	/* XXX */
   expanding_redir = 0;
 
-  top_level_cleanup ();			/* from sig.c */
+  if (parse_and_execute_level == 0)
+    top_level_cleanup ();			/* from sig.c */
+
 
   jump_to_top_level (v);
 }
