@@ -501,8 +501,15 @@ execute_command_internal (command, asynchronous, pipe_in, pipe_out,
   volatile int last_pid;
   volatile int save_line_number;
 
+#if 0
   if (command == 0 || breaking || continuing || read_but_dont_execute)
     return (EXECUTION_SUCCESS);
+#else
+  if (breaking || continuing)
+    return (last_command_exit_value);
+  if (command == 0 || read_but_dont_execute)
+    return (EXECUTION_SUCCESS);
+#endif
 
   QUIT;
   run_pending_traps ();
