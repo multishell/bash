@@ -39,7 +39,12 @@
 /* #define USE_XON_XOFF */
 
 #if defined (__linux__) || defined (HAVE_TERMCAP_H)
-#  include <termcap.h>
+#  include "../../machines.h"
+#  if defined (USE_GNU_TERMCAP)
+#    include "../termcap/termcap.h"
+#  else
+#    include <termcap.h>
+#  endif
 #endif /* __linux__ || HAVE_TERMCAP_H */
 
 /* Some USG machines have BSD signal handling (sigblock, sigsetmask, etc.) */
