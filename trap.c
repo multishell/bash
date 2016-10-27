@@ -1144,20 +1144,12 @@ free_trap_strings ()
 {
   register int i;
 
-  for (i = 0; i < NSIG; i++)
+  for (i = 0; i < BASH_NSIG; i++)
     {
       if (trap_list[i] != (char *)IGNORE_SIG)
 	free_trap_string (i);
     }
-  for (i = NSIG; i < BASH_NSIG; i++)
-    {
-      /* Don't free the trap string if the subshell inherited the trap */
-      if ((sigmodes[i] & SIG_TRAPPED) == 0)
-	{
-	  free_trap_string (i);
-	  trap_list[i] = (char *)NULL;
-	}
-    }
+  trap_list[DEBUG_TRAP] = trap_list[EXIT_TRAP] = trap_list[ERROR_TRAP] = trap_list[RETURN_TRAP] = (char *)NULL;
 }
 
 /* Free a trap command string associated with SIG without changing signal

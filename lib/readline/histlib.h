@@ -76,4 +76,7 @@ extern char *strchr ();
 #define HISTORY_APPEND 0
 #define HISTORY_OVERWRITE 1
 
+/* Some variable definitions shared across history source files. */
+extern int history_offset;
+
 #endif /* !_HISTLIB_H_ */

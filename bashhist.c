@@ -188,9 +188,7 @@ extern int current_command_line_count;
 extern struct dstack dstack;
 extern int parser_state;
 
-#if defined (BANG_HISTORY)
 static int bash_history_inhibit_expansion __P((char *, int));
-#endif
 #if defined (READLINE)
 static void re_edit __P((char *));
 #endif
@@ -201,7 +199,6 @@ static HIST_ENTRY *last_history_entry __P((void));
 static char *expand_histignore_pattern __P((char *));
 static int history_should_ignore __P((char *));
 
-#if defined (BANG_HISTORY)
 /* Is the history expansion starting at string[i] one that should not
    be expanded? */
 static int
@@ -249,15 +246,14 @@ bash_history_inhibit_expansion (string, i)
   else
     return (0);
 }
-#endif
 
 void
 bash_initialize_history ()
 {
   history_quotes_inhibit_expansion = 1;
   history_search_delimiter_chars = ";&()|<>";
-#if defined (BANG_HISTORY)
   history_inhibit_expansion_function = bash_history_inhibit_expansion;
+#if defined (BANG_HISTORY)
   sv_histchars ("histchars");
 #endif
 }
@@ -269,9 +265,9 @@ bash_history_reinit (interact)
 #if defined (BANG_HISTORY)
   history_expansion = interact != 0;
   history_expansion_inhibited = 1;	/* XXX */
-  history_inhibit_expansion_function = bash_history_inhibit_expansion;
 #endif
   remember_on_history = enable_history_list;
+  history_inhibit_expansion_function = bash_history_inhibit_expansion;
 }
 
 void
@@ -289,8 +285,8 @@ bash_history_enable ()
   remember_on_history = enable_history_list = 1;
 #if defined (BANG_HISTORY)
   history_expansion_inhibited = 0;
-  history_inhibit_expansion_function = bash_history_inhibit_expansion;
 #endif
+  history_inhibit_expansion_function = bash_history_inhibit_expansion;
   sv_history_control ("HISTCONTROL");
   sv_histignore ("HISTIGNORE");
 }
@@ -674,9 +670,7 @@ hc_erasedups (line)
       if (STREQ (temp->line, line))
 	{
 	  r = where_history ();
-	  temp = remove_history (r);
-	  if (temp)
-	    free_history_entry (temp);
+	  remove_history (r);
 	}
     }
   using_history ();

@@ -253,7 +253,6 @@ disown_builtin (list)
 	case 'r':
 	  running_jobs = 1;
 	  break;
-	CASE_HELPOPT;
 	default:
 	  builtin_usage ();
 	  return (EX_USAGE);

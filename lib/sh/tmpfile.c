@@ -114,23 +114,6 @@ get_tmpdir (flags)
   return tdir;
 }
 
-static void
-sh_seedrand ()
-{
-#if HAVE_RANDOM
-  int d;
-  static int seeded = 0;
-  if (seeded == 0)
-    {
-      struct timeval tv;
-  	      
-      gettimeofday (&tv, NULL);
-      srandom (tv.tv_sec ^ tv.tv_usec ^ (getpid () << 16) ^ (unsigned int)&d);
-      seeded = 1;
-    }
-#endif
-}
-
 char *
 sh_mktmpname (nameroot, flags)
      char *nameroot;
@@ -139,7 +122,6 @@ sh_mktmpname (nameroot, flags)
   char *filename, *tdir, *lroot;
   struct stat sb;
   int r, tdlen;
-  static int seeded = 0;
 
   filename = (char *)xmalloc (PATH_MAX + 1);
   tdir = get_tmpdir (flags);
@@ -155,7 +137,6 @@ sh_mktmpname (nameroot, flags)
       filename = NULL;
     }
 #else  /* !USE_MKTEMP */
-  sh_seedrand ();
   while (1)
     {
       filenum = (filenum << 1) ^
@@ -186,7 +167,7 @@ sh_mktmpfd (nameroot, flags, namep)
 {
   char *filename, *tdir, *lroot;
   int fd, tdlen;
-  
+
   filename = (char *)xmalloc (PATH_MAX + 1);
   tdir = get_tmpdir (flags);
   tdlen = strlen (tdir);
@@ -205,7 +186,6 @@ sh_mktmpfd (nameroot, flags, namep)
     *namep = filename;
   return fd;
 #else /* !USE_MKSTEMP */
-  sh_seedrand ();
   do
     {
       filenum = (filenum << 1) ^

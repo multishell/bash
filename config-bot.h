@@ -94,10 +94,6 @@
 #  undef COND_REGEXP
 #endif
 
-#if !HAVE_MKSTEMP
-#  undef USE_MKSTEMP
-#endif
-
 /* If the shell is called by this name, it will become restricted. */
 #if defined (RESTRICTED_SHELL)
 #  define RESTRICTED_SHELL_NAME "rbash"

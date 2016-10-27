@@ -236,11 +236,7 @@ tilde_expand (string)
       string += end;
 
       expansion = tilde_expand_word (tilde_word);
-
-      if (expansion == 0)
-	expansion = tilde_word;
-      else
-	xfree (tilde_word);	
+      xfree (tilde_word);
 
       len = strlen (expansion);
 #ifdef __CYGWIN__
