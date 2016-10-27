@@ -3695,7 +3695,9 @@ got_token:
       struct builtin *b;
       b = builtin_address_internal (token, 0);
       if (b && (b->flags & ASSIGNMENT_BUILTIN))
-        parser_state |= PST_ASSIGNOK;
+	parser_state |= PST_ASSIGNOK;
+      else if (STREQ (token, "eval") || STREQ (token, "let"))
+	parser_state |= PST_ASSIGNOK;
     }
 
   yylval.word = the_word;
@@ -4686,17 +4688,20 @@ parse_compound_assignment (retlenp)
      int *retlenp;
 {
   WORD_LIST *wl, *rl;
-  int tok, orig_line_number, orig_token_size;
+  int tok, orig_line_number, orig_token_size, orig_last_token, assignok;
   char *saved_token, *ret;
 
   saved_token = token;
   orig_token_size = token_buffer_size;
   orig_line_number = line_number;
+  orig_last_token = last_read_token;
 
   last_read_token = WORD;	/* WORD to allow reserved words here */
 
   token = (char *)NULL;
   token_buffer_size = 0;
+
+  assignok = parser_state&PST_ASSIGNOK;		/* XXX */
 
   wl = (WORD_LIST *)NULL;	/* ( */
   parser_state |= PST_COMPASSIGN;
@@ -4740,7 +4745,7 @@ parse_compound_assignment (retlenp)
 	jump_to_top_level (DISCARD);
     }
 
-  last_read_token = WORD;
+  last_read_token = orig_last_token;		/* XXX - was WORD? */
   if (wl)
     {
       rl = REVERSE_LIST (wl, WORD_LIST *);
@@ -4752,6 +4757,10 @@ parse_compound_assignment (retlenp)
 
   if (retlenp)
     *retlenp = (ret && *ret) ? strlen (ret) : 0;
+
+  if (assignok)
+    parser_state |= PST_ASSIGNOK;
+
   return ret;
 }
 
