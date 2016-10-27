@@ -4477,6 +4477,7 @@ reserved_word_acceptable (toksym)
     case '}':		/* XXX */
     case AND_AND:
     case BANG:
+    case BAR_AND:
     case DO:
     case DONE:
     case ELIF:
