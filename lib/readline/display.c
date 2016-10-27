@@ -1598,8 +1598,22 @@ update_line (old, new, current_line, omax, nmax, inv_botlin)
 	  temp = nls - nfd;
 	  if (temp > 0)
 	    {
+	      /* If nfd begins at the prompt, or before the invisible
+		 characters in the prompt, we need to adjust _rl_last_c_pos
+		 in a multibyte locale to account for the wrap offset and
+		 set cpos_adjusted accordingly. */
 	      _rl_output_some_chars (nfd, temp);
-	      _rl_last_c_pos += _rl_col_width (nfd, 0, temp);;
+	      if (MB_CUR_MAX > 1 && rl_byte_oriented == 0)
+		{
+                  _rl_last_c_pos += _rl_col_width (nfd, 0, temp);
+                  if (current_line == 0 && wrap_offset &&  ((nfd - new) <= prompt_last_invisible))
+		    {
+		      _rl_last_c_pos -= wrap_offset;
+		      cpos_adjusted = 1;
+		    }
+		}
+              else
+                _rl_last_c_pos += temp;
 	    }
 	}
       /* Otherwise, print over the existing material. */
@@ -1607,8 +1621,20 @@ update_line (old, new, current_line, omax, nmax, inv_botlin)
 	{
 	  if (temp > 0)
 	    {
+	      /* If nfd begins at the prompt, or before the invisible
+		 characters in the prompt, we need to adjust _rl_last_c_pos
+		 in a multibyte locale to account for the wrap offset and
+		 set cpos_adjusted accordingly. */
 	      _rl_output_some_chars (nfd, temp);
 	      _rl_last_c_pos += col_temp;		/* XXX */
+	      if (MB_CUR_MAX > 1 && rl_byte_oriented == 0)
+		{
+		  if (current_line == 0 && wrap_offset &&  ((nfd - new) <= prompt_last_invisible))
+		    {
+		      _rl_last_c_pos -= wrap_offset;
+		      cpos_adjusted = 1;
+		    }
+		}
 	    }
 	  lendiff = (oe - old) - (ne - new);
 	  if (MB_CUR_MAX > 1 && rl_byte_oriented == 0)
