@@ -844,9 +844,10 @@ static void
 realloc_jobs_list ()
 {
   sigset_t set, oset;
-  int nsize, i, j;
+  int nsize, i, j, ncur, nprev;
   JOB **nlist;
 
+  ncur = nprev = NO_JOB;
   nsize = ((js.j_njobs + JOB_SLOTS - 1) / JOB_SLOTS);
   nsize *= JOB_SLOTS;
   i = js.j_njobs % JOB_SLOTS;
@@ -854,17 +855,51 @@ realloc_jobs_list ()
     nsize += JOB_SLOTS;
 
   BLOCK_CHILD (set, oset);
-  nlist = (JOB **) xmalloc (nsize * sizeof (JOB *));
+  nlist = (js.j_jobslots == nsize) ? jobs : (JOB **) xmalloc (nsize * sizeof (JOB *));
+
   for (i = j = 0; i < js.j_jobslots; i++)
     if (jobs[i])
-      nlist[j++] = jobs[i];
+      {
+	if (i == js.j_current)
+	  ncur = j;
+	if (i == js.j_previous)
+	  nprev = j;
+	nlist[j++] = jobs[i];
+      }
+
+#if defined (DEBUG)
+  itrace ("realloc_jobs_list: resize jobs list from %d to %d", js.j_jobslots, nsize);
+  itrace ("realloc_jobs_list: j_lastj changed from %d to %d", js.j_lastj, (j > 0) ? j - 1 : 0);
+  itrace ("realloc_jobs_list: j_njobs changed from %d to %d", js.j_njobs, (j > 0) ? j - 1 : 0);
+#endif
 
   js.j_firstj = 0;
-  js.j_lastj = (j > 0) ? j - 1: 0;
+  js.j_lastj = (j > 0) ? j - 1 : 0;
+  js.j_njobs = j;
   js.j_jobslots = nsize;
 
-  free (jobs);
-  jobs = nlist;
+  /* Zero out remaining slots in new jobs list */
+  for ( ; j < nsize; j++)
+    nlist[j] = (JOB *)NULL;
+
+  if (jobs != nlist)
+    {
+      free (jobs);
+      jobs = nlist;
+    }
+
+  if (ncur != NO_JOB)
+    js.j_current = ncur;
+  if (nprev != NO_JOB)
+    js.j_previous = nprev;
+
+  /* Need to reset these */
+  if (js.j_current == NO_JOB || js.j_previous == NO_JOB || js.j_current > js.j_lastj || js.j_previous > js.j_lastj)
+    reset_current ();
+
+#ifdef DEBUG
+  itrace ("realloc_jobs_list: reset js.j_current (%d) and js.j_previous (%d)", js.j_current, js.j_previous);
+#endif
 
   UNBLOCK_CHILD (oset);
 }
