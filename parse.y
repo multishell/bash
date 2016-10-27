@@ -3442,8 +3442,11 @@ eof_error:
 		}
 	      else
 		shell_ungetc (peekc);
-	      tflags |= LEX_HEREDELIM;
-	      lex_firstind = -1;
+	      if (peekc != '<')
+		{
+		  tflags |= LEX_HEREDELIM;
+		  lex_firstind = -1;
+		}
 	      continue;
 	    }
 	  else
