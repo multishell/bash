@@ -49,6 +49,12 @@ $END
 #  define INT_MIN		(-2147483647-1)
 #endif
 
+#if defined (PREFER_STDARG)
+#  include <stdarg.h>
+#else
+#  include <varargs.h>
+#endif
+
 #include <stdio.h>
 #include <chartypes.h>
 
@@ -150,6 +156,10 @@ extern int errno;
 
 #define SKIP1 "#'-+ 0"
 #define LENMODS "hjlLtz"
+
+#ifndef HAVE_ASPRINTF
+extern int asprintf __P((char **, const char *, ...)) __attribute__((__format__ (printf, 2, 3)));
+#endif
 
 static void printf_erange __P((char *));
 static int printstr __P((char *, char *, int, int, int));
