@@ -722,7 +722,7 @@ array_value_internal (s, quoted, allow_all, rtype)
   if (ALL_ELEMENT_SUB (t[0]) && t[1] == ']')
     {
       if (rtype)
-	*rtype = 1;
+	*rtype = (t[0] == '*') ? 1 : 2;
       if (allow_all == 0)
 	{
 	  err_badarraysub (s);

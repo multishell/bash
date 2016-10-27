@@ -4907,10 +4907,11 @@ parameter_brace_expand_word (name, var_is_special, quoted)
   char *temp, *tt;
   intmax_t arg_index;
   SHELL_VAR *var;
-  int atype;
+  int atype, rflags;
 
   ret = 0;
   temp = 0;
+  rflags = 0;
 
   /* Handle multiple digit arguments, as in ${11}. */  
   if (legal_number (name, &arg_index))
@@ -4943,6 +4944,8 @@ parameter_brace_expand_word (name, var_is_special, quoted)
  	temp = (*temp && (quoted & (Q_DOUBLE_QUOTES|Q_HERE_DOCUMENT)))
  		  ? quote_string (temp)
  		  : quote_escapes (temp);
+      else if (atype == 1 && temp && QUOTED_NULL (temp) && (quoted & (Q_DOUBLE_QUOTES|Q_HERE_DOCUMENT)))
+	rflags |= W_HASQUOTEDNULL;
     }
 #endif
   else if (var = find_variable (name))
@@ -4970,6 +4973,7 @@ parameter_brace_expand_word (name, var_is_special, quoted)
     {
       ret = alloc_word_desc ();
       ret->word = temp;
+      ret->flags |= rflags;
     }
   return ret;
 }
