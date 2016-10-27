@@ -2217,7 +2217,7 @@ bind_variable_internal (name, value, table, hflags, aflags)
 	}
       else if (assoc_p (entry))
 	{
-	  assoc_insert (assoc_cell (entry), "0", newval);
+	  assoc_insert (assoc_cell (entry), savestring ("0"), newval);
 	  free (newval);
 	}
       else
