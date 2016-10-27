@@ -2735,7 +2735,7 @@ parse_matched_pair (qc, open, close, lenp, flags)
 /* itrace("parse_matched_pair: open = %c close = %c", open, close); */
   count = 1;
   pass_next_character = backq_backslash = was_dollar = in_comment = 0;
-  check_comment = (flags & P_COMMAND) && qc != '\'' && qc != '"' && (flags & P_DQUOTE) == 0;
+  check_comment = (flags & P_COMMAND) && qc != '`' && qc != '\'' && qc != '"' && (flags & P_DQUOTE) == 0;
 
   /* RFLAGS is the set of flags we want to pass to recursive calls. */
   rflags = (qc == '"') ? P_DQUOTE : (flags & P_DQUOTE);
