@@ -1,5 +1,5 @@
-/* strindex.c - Find if one string appears as a substring of another string,
-		without regard to case. */
+/* strcasestr.c - Find if one string appears as a substring of another string,
+		  without regard to case. */
 
 /* Copyright (C) 2000 Free Software Foundation, Inc.
 
@@ -30,7 +30,7 @@
    match in s1.  The compare is case insensitive.  This is a
    case-insensitive strstr(3). */
 char *
-strindex (s1, s2)
+strcasestr (s1, s2)
      const char *s1;
      const char *s2;
 {

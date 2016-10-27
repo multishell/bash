@@ -113,12 +113,20 @@ copy_redirect (redirect)
   REDIRECT *new_redirect;
 
   new_redirect = (REDIRECT *)xmalloc (sizeof (REDIRECT));
+#if 0
   FASTCOPY ((char *)redirect, (char *)new_redirect, (sizeof (REDIRECT)));
+#else
+  *new_redirect = *redirect;	/* let the compiler do the fast structure copy */
+#endif
+
+  if (redirect->rflags & REDIR_VARASSIGN)
+    new_redirect->redirector.filename = copy_word (redirect->redirector.filename);
+
   switch (redirect->instruction)
     {
     case r_reading_until:
     case r_deblank_reading_until:
-      new_redirect->here_doc_eof = redirect->here_doc_eof ? savestring (redirect->here_doc_eof) : 0;
+      new_redirect->here_doc_eof = savestring (redirect->here_doc_eof);
       /*FALLTHROUGH*/
     case r_reading_string:
     case r_appending_to:

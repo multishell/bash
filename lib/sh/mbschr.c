@@ -1,4 +1,4 @@
-/* xstrchr.c - strchr(3) that handles multibyte characters. */
+/* mbschr.c - strchr(3) that handles multibyte characters. */
 
 /* Copyright (C) 2002 Free Software Foundation, Inc.
 
@@ -27,7 +27,7 @@
 #include "bashansi.h"
 #include "shmbutil.h"
 
-#undef xstrchr
+#undef mbschr
 
 /* In some locales, the non-first byte of some multibyte characters have
    the same value as some ascii character.  Faced with these strings, a
@@ -35,9 +35,9 @@
 
 char *
 #if defined (PROTOTYPES)
-xstrchr (const char *s, int c)
+mbschr (const char *s, int c)
 #else
-xstrchr (s, c)
+mbschr (s, c)
      const char *s;
      int c;
 #endif
@@ -63,7 +63,7 @@ xstrchr (s, c)
 	  if (mblength == (size_t)-2 || mblength == (size_t)-1 || mblength == (size_t)0)
 	    mblength = 1;
 
-	  if (c == (unsigned char)*pos)
+	  if (mblength == 1 && c == (unsigned char)*pos)
 	    return pos;
 
 	  strlength -= mblength;

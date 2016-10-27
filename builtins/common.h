@@ -35,8 +35,6 @@
 #define SEVAL_NOLONGJMP 0x040
 
 /* Flags for describe_command, shared between type.def and command.def */
-#define SEVAL_FUNCDEF	0x080		/* only allow function definitions */
-#define SEVAL_ONECMD	0x100		/* only allow a single command */
 #define CDESC_ALL		0x001	/* type -a */
 #define CDESC_SHORTDESC		0x002	/* command -V */
 #define CDESC_REUSABLE		0x004	/* command -v */
@@ -141,7 +139,11 @@ extern char **get_shopt_options __P((void));
 extern int shopt_setopt __P((char *, int));
 extern int shopt_listopt __P((char *, int));
 
-extern int set_login_shell __P((int));
+extern int set_login_shell __P((char *, int));
+
+extern void set_bashopts __P((void));
+extern void parse_bashopts __P((char *));
+extern void initialize_bashopts __P((int));
 
 /* Functions from type.def */
 extern int describe_command __P((char *, int));
