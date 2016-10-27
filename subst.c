@@ -4982,7 +4982,7 @@ get_var_and_type (varname, value, quoted, varp, valp)
       else
 	return -1;
     }
-  else if ((v = find_variable (varname)) && array_p (v))
+  else if ((v = find_variable (varname)) && (invisible_p (v) == 0) && array_p (v))
     {
       vtype = VT_ARRAYMEMBER;
       *varp = v;
