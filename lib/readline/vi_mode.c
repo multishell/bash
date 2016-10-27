@@ -272,10 +272,12 @@ rl_vi_search (count, key)
   switch (key)
     {
     case '?':
+      _rl_free_saved_history_line ();
       rl_noninc_forward_search (count, key);
       break;
 
     case '/':
+      _rl_free_saved_history_line ();
       rl_noninc_reverse_search (count, key);
       break;
 
