@@ -3974,7 +3974,11 @@ parameter_brace_remove_pattern (varname, value, patstr, rtype, quoted)
   if (patspec == RP_LONG_LEFT || patspec == RP_LONG_RIGHT)
     patstr++;
 
-  pattern = getpattern (patstr, quoted, 1);
+  /* Need to pass getpattern newly-allocated memory in case of expansion --
+     the expansion code will free the passed string on an error. */
+  temp1 = savestring (patstr);
+  pattern = getpattern (temp1, quoted, 1);
+  free (temp1);
 
   temp1 = (char *)NULL;		/* shut up gcc */
   switch (vtype)
