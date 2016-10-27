@@ -4143,6 +4143,12 @@ unlink_fifo_list ()
     nfifo = 0;
 }
 
+int
+fifos_pending ()
+{
+  return nfifo;
+}
+
 static char *
 make_named_pipe ()
 {
@@ -4190,6 +4196,12 @@ add_fifo_list (fd)
 
   dev_fd_list[fd] = 1;
   nfds++;
+}
+
+int
+fifos_pending ()
+{
+  return 0;	/* used for cleanup; not needed with /dev/fd */
 }
 
 void
@@ -4693,6 +4705,9 @@ command_substitute (string, quoted)
 
       last_command_exit_value = rc;
       rc = run_exit_trap ();
+#if defined (PROCESS_SUBSTITUTION)
+      unlink_fifo_list ();
+#endif
       exit (rc);
     }
   else
