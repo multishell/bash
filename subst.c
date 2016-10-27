@@ -1887,7 +1887,13 @@ string_list_dollar_at (list, quoted)
   sep[1] = '\0';
 #endif
 
+  /* XXX -- why call quote_list if ifs == 0?  we can get away without doing
+     it now that quote_escapes quotes spaces */
+#if 0
   tlist = ((quoted & (Q_HERE_DOCUMENT|Q_DOUBLE_QUOTES)) || (ifs && *ifs == 0))
+#else
+  tlist = (quoted & (Q_HERE_DOCUMENT|Q_DOUBLE_QUOTES))
+#endif
 		? quote_list (list)
 		: list_quote_escapes (list);
 
@@ -2921,7 +2927,12 @@ expand_string (string, quoted)
 
 /* Quote escape characters in string s, but no other characters.  This is
    used to protect CTLESC and CTLNUL in variable values from the rest of
-   the word expansion process after the variable is expanded. */
+   the word expansion process after the variable is expanded.  If IFS is
+   null, we quote spaces as well, just in case we split on spaces later
+   (in the case of unquoted $@, we will eventually attempt to split the
+   entire word on spaces).  Corresponding code exists in dequote_escapes.
+   Even if we don't end up splitting on spaces, quoting spaces is not a
+   problem. */
 char *
 quote_escapes (string)
      char *string;
@@ -2929,17 +2940,19 @@ quote_escapes (string)
   register char *s, *t;
   size_t slen;
   char *result, *send;
+  int quote_spaces;
   DECLARE_MBSTATE; 
 
   slen = strlen (string);
   send = string + slen;
 
+  quote_spaces = (ifs_value && *ifs_value == 0);
   t = result = (char *)xmalloc ((slen * 2) + 1);
   s = string;
 
   while (*s)
     {
-      if (*s == CTLESC || *s == CTLNUL)
+      if (*s == CTLESC || *s == CTLNUL || (quote_spaces && *s == ' '))
 	*t++ = CTLESC;
       COPY_CHAR_P (t, s, send);
     }
@@ -2981,6 +2994,7 @@ dequote_escapes (string)
   register char *s, *t;
   size_t slen;
   char *result, *send;
+  int quote_spaces;
   DECLARE_MBSTATE;
 
   if (string == 0)
@@ -2995,9 +3009,10 @@ dequote_escapes (string)
   if (strchr (string, CTLESC) == 0)
     return (strcpy (result, s));
 
+  quote_spaces = (ifs_value && *ifs_value == 0);
   while (*s)
     {
-      if (*s == CTLESC && (s[1] == CTLESC || s[1] == CTLNUL))
+      if (*s == CTLESC && (s[1] == CTLESC || s[1] == CTLNUL || (quote_spaces && s[1] == ' ')))
 	{
 	  s++;
 	  if (*s == '\0')
@@ -4461,7 +4476,15 @@ read_comsub (fd, quoted)
       /* Add the character to ISTRING, possibly after resizing it. */
       RESIZE_MALLOCED_BUFFER (istring, istring_index, 2, istring_size, DEFAULT_ARRAY_SIZE);
 
-      if ((quoted & (Q_HERE_DOCUMENT|Q_DOUBLE_QUOTES)) || c == CTLESC || c == CTLNUL)
+      /* This is essentially quote_string inline */
+      if ((quoted & (Q_HERE_DOCUMENT|Q_DOUBLE_QUOTES)) /* || c == CTLESC || c == CTLNUL */)
+	istring[istring_index++] = CTLESC;
+      /* Escape CTLESC and CTLNUL in the output to protect those characters
+	 from the rest of the word expansions (word splitting and globbing.)
+	 This is essentially quote_escapes inline. */
+      else if (c == CTLESC)
+	istring[istring_index++] = CTLESC;
+      else if (c == CTLNUL || (c == ' ' && (ifs_value && *ifs_value == 0)))
 	istring[istring_index++] = CTLESC;
 
       istring[istring_index++] = c;
@@ -5551,12 +5574,16 @@ parameter_brace_substring (varname, value, substr, quoted)
 	 so verify_substring_values just returns the numbers specified and we
 	 rely on array_subrange to understand how to deal with them). */
       tt = array_subrange (array_cell (v), e1, e2, starsub, quoted);
+#if 0
+      /* array_subrange now calls array_quote_escapes as appropriate, so the
+	 caller no longer needs to. */
       if ((quoted & (Q_DOUBLE_QUOTES|Q_HERE_DOCUMENT)) == 0)
 	{
 	  temp = tt ? quote_escapes (tt) : (char *)NULL;
 	  FREE (tt);
 	}
       else
+#endif
 	temp = tt;
       break;
 #endif
@@ -5807,12 +5834,16 @@ parameter_brace_patsub (varname, value, patsub, quoted)
 #if defined (ARRAY_VARS)
     case VT_ARRAYVAR:
       temp = array_patsub (array_cell (v), p, rep, mflags);
+#if 0
+      /* Don't need to do this anymore; array_patsub calls array_quote_escapes
+	 as appropriate before adding the space separators. */
       if (temp && (mflags & MATCH_QUOTED) == 0)
 	{
 	  tt = quote_escapes (temp);
 	  free (temp);
 	  temp = tt;
 	}
+#endif
       break;
 #endif
     }
