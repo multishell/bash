@@ -420,8 +420,8 @@ $(TILDE_LIBRARY): config.h $(TILDE_SOURCE)
 		$(MAKE) $(MFLAGS) libtilde.a) || exit 1
 
 $(TERMCAP_LIBRARY): config.h ${TERMCAP_SOURCE}
-	@echo making $@ in ${TERMCAP_LIBDIR}	
-	@(cd ${TERMCAP_LIBDIR} && \
+	@echo making $@ in ${TERM_LIBDIR}	
+	@(cd ${TERM_LIBDIR} && \
 		$(MAKE) $(MFLAGS) libtermcap.a) || exit 1
 
 mksignames:	$(SUPPORT_SRC)mksignames.c
