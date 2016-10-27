@@ -3589,7 +3589,7 @@ read_token_word (character)
 	      FREE (ttok);
 	      all_digit_token = 0;
 	      compound_assignment = 1;
-#if 0
+#if 1
 	      goto next_character;
 #else
 	      goto got_token;		/* ksh93 seems to do this */
