@@ -1278,7 +1278,7 @@ extract_dollar_brace_string (string, sindex, quoted, flags)
     {
       if (no_longjmp_on_fatal_error == 0)
 	{			/* { */
-	  report_error ("bad substitution: no closing `%s' in %s", "}", string);
+	  report_error (_("bad substitution: no closing `%s' in %s"), "}", string);
 	  last_command_exit_value = EXECUTION_FAILURE;
 	  exp_jump_to_top_level (DISCARD);
 	}
@@ -7662,6 +7662,8 @@ exp_jump_to_top_level (v)
   expand_no_split_dollar_star = 0;	/* XXX */
   expanding_redir = 0;
 
+  top_level_cleanup ();			/* from sig.c */
+
   jump_to_top_level (v);
 }
 
@@ -7879,7 +7881,7 @@ glob_expand_word_list (tlist, eflags)
 	  else if (fail_glob_expansion != 0)
 	    {
 	      report_error (_("no match: %s"), tlist->word->word);
-	      jump_to_top_level (DISCARD);
+	      exp_jump_to_top_level (DISCARD);
 	    }
 	  else if (allow_null_glob_expansion == 0)
 	    {
