@@ -7242,7 +7242,13 @@ parameter_brace_expand (string, indexp, quoted, pflags, quoted_dollar_atp, conta
 
       ret = alloc_word_desc ();
       ret->word = temp1;
-      if (temp1 && QUOTED_NULL (temp1) && (quoted & (Q_HERE_DOCUMENT|Q_DOUBLE_QUOTES)))
+      /* We test quoted_dollar_atp because we want variants with double-quoted
+	 "$@" to take a different code path. In fact, we make sure at the end
+	 of expand_word_internal that we're only looking at these flags if
+	 quoted_dollar_at == 0. */
+      if (temp1 && 
+          (quoted_dollar_atp == 0 || *quoted_dollar_atp == 0) &&
+	  QUOTED_NULL (temp1) && (quoted & (Q_HERE_DOCUMENT|Q_DOUBLE_QUOTES)))
 	ret->flags |= W_QUOTED|W_HASQUOTEDNULL;
       return ret;
     }
