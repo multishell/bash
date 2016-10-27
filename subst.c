@@ -85,6 +85,7 @@ extern int errno;
 
 /* Flags for the `pflags' argument to param_expand() */
 #define PF_NOCOMSUB	0x01	/* Do not perform command substitution */
+#define PF_IGNUNBOUND	0x02	/* ignore unbound vars even if -u set */
 
 /* These defs make it easier to use the editor. */
 #define LBRACE		'{'
@@ -263,7 +264,7 @@ static int valid_brace_expansion_word __P((char *, int));
 static int chk_atstar __P((char *, int, int *, int *));
 static int chk_arithsub __P((const char *, int));
 
-static WORD_DESC *parameter_brace_expand_word __P((char *, int, int));
+static WORD_DESC *parameter_brace_expand_word __P((char *, int, int, int));
 static WORD_DESC *parameter_brace_expand_indir __P((char *, int, int, int *, int *));
 static WORD_DESC *parameter_brace_expand_rhs __P((char *, char *, int, int, int *, int *));
 static void parameter_brace_expand_error __P((char *, char *));
@@ -5195,9 +5196,9 @@ chk_atstar (name, quoted, quoted_dollar_atp, contains_dollar_at)
    the shell, e.g., "@", "$", "*", etc.  QUOTED, if non-zero, means that
    NAME was found inside of a double-quoted expression. */
 static WORD_DESC *
-parameter_brace_expand_word (name, var_is_special, quoted)
+parameter_brace_expand_word (name, var_is_special, quoted, pflags)
      char *name;
-     int var_is_special, quoted;
+     int var_is_special, quoted, pflags;
 {
   WORD_DESC *ret;
   char *temp, *tt;
@@ -5229,7 +5230,7 @@ parameter_brace_expand_word (name, var_is_special, quoted)
       strcpy (tt + 1, name);
 
       ret = param_expand (tt, &sindex, quoted, (int *)NULL, (int *)NULL,
-			  (int *)NULL, (int *)NULL, 0);
+			  (int *)NULL, (int *)NULL, pflags);
       free (tt);
     }
 #if defined (ARRAY_VARS)
@@ -5290,7 +5291,7 @@ parameter_brace_expand_indir (name, var_is_special, quoted, quoted_dollar_atp, c
   char *temp, *t;
   WORD_DESC *w;
 
-  w = parameter_brace_expand_word (name, var_is_special, quoted);
+  w = parameter_brace_expand_word (name, var_is_special, quoted, PF_IGNUNBOUND);
   t = w->word;
   /* Have to dequote here if necessary */
   if (t)
@@ -5307,7 +5308,7 @@ parameter_brace_expand_indir (name, var_is_special, quoted, quoted_dollar_atp, c
   if (t == 0)
     return (WORD_DESC *)NULL;
 
-  w = parameter_brace_expand_word (t, SPECIAL_VAR(t, 0), quoted);
+  w = parameter_brace_expand_word (t, SPECIAL_VAR(t, 0), quoted, 0);
   free (t);
 
   return w;
@@ -6658,7 +6659,7 @@ parameter_brace_expand (string, indexp, quoted, quoted_dollar_atp, contains_doll
   if (want_indir)
     tdesc = parameter_brace_expand_indir (name + 1, var_is_special, quoted, quoted_dollar_atp, contains_dollar_at);
   else
-    tdesc = parameter_brace_expand_word (name, var_is_special, quoted);
+    tdesc = parameter_brace_expand_word (name, var_is_special, quoted, PF_IGNUNBOUND);
 
   if (tdesc)
     {
@@ -6989,7 +6990,7 @@ param_expand (string, sindex, quoted, expanded_something,
     case '*':		/* `$*' */
       list = list_rest_of_args ();
 
-      if (list == 0 && unbound_vars_is_error)
+      if (list == 0 && unbound_vars_is_error && (pflags & PF_IGNUNBOUND) == 0)
 	{
 	  uerror[0] = '$';
 	  uerror[1] = '*';
@@ -7051,7 +7052,7 @@ param_expand (string, sindex, quoted, expanded_something,
     case '@':		/* `$@' */
       list = list_rest_of_args ();
 
-      if (list == 0 && unbound_vars_is_error)
+      if (list == 0 && unbound_vars_is_error && (pflags & PF_IGNUNBOUND) == 0)
 	{
 	  uerror[0] = '$';
 	  uerror[1] = '@';
