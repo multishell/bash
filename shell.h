@@ -55,6 +55,8 @@ extern int EOF_Reached;
 /* Usage messages by builtins result in a return status of 2. */
 #define EX_BADUSAGE	2
 
+#define EX_MISCERROR	2
+
 /* Special exit statuses used by the shell, internally and externally. */
 #define EX_RETRYFAIL	124
 #define EX_WEXPCOMSUB	125
@@ -142,6 +144,8 @@ typedef struct _sh_parser_state_t {
   /* Nothing right now for multibyte state, but might want something later. */
 #endif
 
+  char **prompt_string_pointer;
+
   /* history state affecting or modified by the parser */
   int current_command_line_count;
 #if defined (HISTORY)
@@ -163,7 +167,5 @@ typedef struct _sh_parser_state_t {
 } sh_parser_state_t;
 
 /* Let's try declaring these here. */
-extern char *parser_remaining_input __P((void));
-
 extern sh_parser_state_t *save_parser_state __P((sh_parser_state_t *));
 extern void restore_parser_state __P((sh_parser_state_t *));

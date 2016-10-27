@@ -1,6 +1,6 @@
-/* fdprintf -- printf to a file descriptor */
+/* dprintf -- printf to a file descriptor */
 
-/* Copyright (C) 2008,2009 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2010 Free Software Foundation, Inc.
 
    This file is part of GNU Bash, the Bourne Again SHell.
 
@@ -38,9 +38,9 @@
 
 int
 #if defined (PREFER_STDARG)
-fdprintf(int fd, const char *format, ...)
+dprintf(int fd, const char *format, ...)
 #else
-fdprintf(fd, format, va_alist)
+dprintf(fd, format, va_alist)
      int fd;
      const char *format;
      va_dcl
