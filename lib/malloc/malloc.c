@@ -878,7 +878,7 @@ internal_free (mem, file, line, flags)
   nextf[nunits] = p;
   busy[nunits] = 0;
 
-free_return:
+free_return:;
 
 #ifdef MALLOC_STATS
   _mstats.nmalloc[nunits]--;
