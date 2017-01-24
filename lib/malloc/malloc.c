@@ -518,6 +518,7 @@ malloc_debug_dummy ()
   ;
 }
 
+#ifdef MULTISHELL_PATCH
 char *
 malloc (n)		/* get a block */
      size_t n;
@@ -778,6 +779,7 @@ memalign (alignment, size)
   p->mh_alloc = ISMEMALIGN;
   return aligned;
 }
+#endif /* MULTISHELL_PATCH */
 
 #if !defined (HPUX)
 /* This runs into trouble with getpagesize on HPUX, and Multimax machines.
@@ -794,6 +796,7 @@ valloc (size)
 }
 #endif /* !HPUX */
 
+#ifdef MULTISHELL_PATCH
 #ifndef NO_CALLOC
 char *
 calloc (n, s)
@@ -816,6 +819,7 @@ cfree (p)
   free (p);
 }
 #endif /* !NO_CALLOC */
+#endif /* MULTISHELL_PATCH */
 
 #ifdef MALLOC_STATS
 
