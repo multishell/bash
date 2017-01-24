@@ -66,6 +66,7 @@ esac
 
 # Separate what the user gave into CPU-COMPANY and OS or KERNEL-OS (if any).
 # Here we must recognize all the valid KERNEL-OS combinations.
+set -x
 maybe_os=`echo $1 | sed 's/^\(.*\)-\([^-]*-[^-]*\)$/\2/'`
 case $maybe_os in
   linux-gnu*)
@@ -185,6 +186,9 @@ case $basic_machine in
 	i[34567]86)
 	  basic_machine=$basic_machine-pc
 	  ;;
+    # Multishell - add support for 64-bit
+    x86_64-*)
+      ;;
 	# Object if more than one company name word.
 	*-*-*)
 		echo Invalid configuration \`$1\': machine \`$basic_machine\' not recognized 1>&2
