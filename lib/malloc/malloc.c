@@ -516,6 +516,7 @@ malloc_debug_dummy ()
   ;
 }
 
+#ifdef MULTISHELL_PATCH
 char *
 malloc (n)		/* get a block */
      size_t n;
@@ -749,6 +750,7 @@ realloc (mem, n)
   free (mem);
   return m;
 }
+#endif  /* MULTISHELL_PATCH */
 
 char *
 memalign (alignment, size)
@@ -792,6 +794,7 @@ valloc (size)
 }
 #endif /* !HPUX */
 
+#ifdef MULTISHELL_PATCH
 #ifndef NO_CALLOC
 char *
 calloc (n, s)
@@ -814,6 +817,7 @@ cfree (p)
   free (p);
 }
 #endif /* !NO_CALLOC */
+#endif /* MULTISHELL_PATCH */
 
 #ifdef MALLOC_STATS
 
