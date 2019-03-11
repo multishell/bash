@@ -23,19 +23,19 @@
 .\" and `complete-hostname' down in READLINE,
 .\" then uncomment this redefinition.
 .\"
-.de }1
-.ds ]X \&\\*(]B\\
-.nr )E 0
-.if !"\\$1"" .nr )I \\$1n
-.}f
-.ll \\n(LLu
-.in \\n()Ru+\\n(INu+\\n()Iu
-.ti \\n(INu
-.ie !\\n()Iu+\\n()Ru-\w\\*(]Xu-3p \{\\*(]X
-.br\}
-.el \\*(]X\h|\\n()Iu+\\n()Ru\c
-.}f
-..
+.\" .de }1
+.\" .ds ]X \&\\*(]B\\
+.\" .nr )E 0
+.\" .if !"\\$1"" .nr )I \\$1n
+.\" .}f
+.\" .ll \\n(LLu
+.\" .in \\n()Ru+\\n(INu+\\n()Iu
+.\" .ti \\n(INu
+.\" .ie !\\n()Iu+\\n()Ru-\w\\*(]Xu-3p \{\\*(]X
+.\" .br\}
+.\" .el \\*(]X\h|\\n()Iu+\\n()Ru\c
+.\" .}f
+.\" ..
 .\"
 .\" File Name macro.  This used to be `.PN', for Path Name,
 .\" but Sun doesn't seem to like that very much.
@@ -9769,8 +9769,9 @@ The list of \fBshopt\fP options is:
 .TP 8
 .B assoc_expand_once
 If set, the shell suppresses multiple evaluation of associative array
-subscripts during arithmetic expression evaluation and while executing
-builtins that can perform variable assignments.
+subscripts during arithmetic expression evaluation, while executing
+builtins that can perform variable assignments,
+and while executing builtins that perform array dereferencing.
 .TP 8
 .B autocd
 If set, a command name that is the name of a directory is executed as if

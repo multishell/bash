@@ -4868,10 +4868,11 @@ next_alias_char:
      return the space that will delimit the token and postpone the pop_string.
      This set of conditions duplicates what used to be in mk_alexpansion ()
      below, with the addition that we don't add a space if we're currently
-     reading a quoted string. */
+     reading a quoted string or in a shell comment. */
 #ifndef OLD_ALIAS_HACK
   if (uc == 0 && pushed_string_list && pushed_string_list->flags != PSH_SOURCE &&
       pushed_string_list->flags != PSH_DPAREN &&
+      (parser_state & PST_COMMENT) == 0 &&
       shell_input_line_index > 0 &&
       shell_input_line[shell_input_line_index-1] != ' ' &&
       shell_input_line[shell_input_line_index-1] != '\n' &&
@@ -5583,8 +5584,10 @@ itrace("shell_getc: bash_input.location.string = `%s'", bash_input.location.stri
   if MBTEST(character == '#' && (!interactive || interactive_comments))
     {
       /* A comment.  Discard until EOL or EOF, and then return a newline. */
+      parser_state |= PST_COMMENT;
       discard_until ('\n');
       shell_getc (0);
+      parser_state &= ~PST_COMMENT;
       character = '\n';	/* this will take the next if statement and return. */
     }
 

@@ -24,7 +24,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_REVISION([for Bash 5.0, version 5.005])dnl
 
 define(bashvers, 5.0)
-define(relstatus, rc1)
+define(relstatus, release)
 
 AC_INIT([bash], bashvers-relstatus, [bug-bash@gnu.org])
 

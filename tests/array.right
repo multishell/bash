@@ -395,7 +395,7 @@ qux: unset array element 0: ok
 0
 0
 1
-2
+./array17.sub: line 30: ~: syntax error: operand expected (error token is "~")
 0
 0
 3
