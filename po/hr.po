@@ -3,13 +3,13 @@
 # This file is distributed under the same license as the bash package.
 #
 # Tomislav Krznar <tomislav.krznar@gmail.com>, 2012, 2013.
-# Božidar Putanec <bozidarp@yahoo.com>, 2018.
+# Božidar Putanec <bozidarp@yahoo.com>, 2018, 2019.
 msgid ""
 msgstr ""
-"Project-Id-Version: bash 5.0-beta2\n"
+"Project-Id-Version: bash 5.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-08-07 12:00-0400\n"
-"PO-Revision-Date: 2018-12-05 17:31-0800\n"
+"POT-Creation-Date: 2020-11-28 12:51-0500\n"
+"PO-Revision-Date: 2020-11-22 13:25-0800\n"
 "Last-Translator: Božidar Putanec <bozidarp@yahoo.com>\n"
 "Language-Team: Croatian <lokalizacija@linux.hr>\n"
 "Language: hr\n"
@@ -19,18 +19,14 @@ msgstr ""
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Poedit 2.2\n"
-"X-Poedit-Basepath: ../sources\n"
-"X-Poedit-SearchPath-0: .\n"
-"X-Poedit-SearchPath-1: bash-5.0-beta2\n"
-"X-Poedit-SearchPath-2: bash-5.0-beta2/builtins\n"
+"X-Generator: Lokalize 2.0\n"
 
 #: arrayfunc.c:66
 msgid "bad array subscript"
 msgstr "nevaljani indeks polja"
 
-#: arrayfunc.c:421 builtins/declare.def:638 variables.c:2249 variables.c:2275
-#: variables.c:3108
+#: arrayfunc.c:421 builtins/declare.def:638 variables.c:2274 variables.c:2300
+#: variables.c:3133
 #, c-format
 msgid "%s: removing nameref attribute"
 msgstr "%s: uklanja se atribut nameref"
@@ -60,26 +56,26 @@ msgstr "%s: %s: mora se koristiti indeks pri dodijeli asocijativnoga polja"
 msgid "%s: cannot create: %s"
 msgstr "%s: nije moguće napraviti: %s"
 
-#: bashline.c:4308
+#: bashline.c:4310
 msgid "bash_execute_unix_command: cannot find keymap for command"
 msgstr "bash_execute_unix_command: nije moguće pronaći keymap za naredbu"
 
-#: bashline.c:4455
+#: bashline.c:4459
 #, c-format
 msgid "%s: first non-whitespace character is not `\"'"
 msgstr "%s: prvi znak, koji nije bjelina, nije „\"“"
 
-#: bashline.c:4484
+#: bashline.c:4488
 #, c-format
 msgid "no closing `%c' in %s"
 msgstr "nema zaključnoga „%c“ u %s"
 
-#: bashline.c:4515
+#: bashline.c:4519
 #, c-format
 msgid "%s: missing colon separator"
 msgstr "%s: nema razdjelnika dvotočke"
 
-#: bashline.c:4551
+#: bashline.c:4555
 #, fuzzy, c-format
 msgid "`%s': cannot unbind in command keymap"
 msgstr "„%s“: nije moguće razvezati"
@@ -106,7 +102,7 @@ msgstr ""
 "brace expansion: nije uspjelo dodijeliti memoriju za „%s“\n"
 "(primjer ekspanzije unutar vitičastih zagrada: echo a{d,c}e -> ade, ace)"
 
-#: builtins/alias.def:131 variables.c:1835
+#: builtins/alias.def:131 variables.c:1844
 #, c-format
 msgid "`%s': invalid alias name"
 msgstr "„%s“: nevaljano ime aliasa"
@@ -165,14 +161,14 @@ msgid ""
 "    The value of EXPR indicates how many call frames to go back before the\n"
 "    current one; the top frame is frame 0."
 msgstr ""
-"Vrati kontekst trenutačnoga poziva potprogramu.\n"
+"Vrati kontekst trenutnog poziva potprogramu.\n"
 "\n"
 "    Bez IZRAZA, vrati „$line $filename“. Ako je dȃn IZRAZ, vrati\n"
 "    „$line $subroutine $filename“; ova dodatna informacija može poslužiti\n"
 "    za „stack trace“.\n"
 "\n"
-"    Vrijednost IZRAZA pokazuje koliko se treba vratiti unazad od\n"
-"    trenutačne pozicije, s time da je pozicija 0 trenutačna pozicija.\n"
+"    Vrijednost IZRAZA pokazuje koliko se treba vratiti unatrag od\n"
+"    trenutne pozicije, s time da je pozicija 0 trenutna pozicija.\n"
 "\n"
 "    Završi s kȏdom 0 osim ako ljuska ne izvršava ljuskinu funkciju\n"
 "    ili je IZRAZ nevaljani."
@@ -181,7 +177,7 @@ msgstr ""
 msgid "HOME not set"
 msgstr "HOME varijabla nije definirana"
 
-#: builtins/cd.def:335 builtins/common.c:161 test.c:898
+#: builtins/cd.def:335 builtins/common.c:161 test.c:901
 msgid "too many arguments"
 msgstr "previše argumenata"
 
@@ -310,7 +306,7 @@ msgstr "%s: nije ugrađena bash naredba"
 #: builtins/common.c:323
 #, c-format
 msgid "write error: %s"
-msgstr "greška pisanja: %s"
+msgstr "greška pri pisanja: %s"
 
 #: builtins/common.c:331
 #, c-format
@@ -325,23 +321,23 @@ msgstr "greška pri preuzimanju svojstava terminala: %s"
 #: builtins/common.c:635
 #, c-format
 msgid "%s: error retrieving current directory: %s: %s\n"
-msgstr "%s: nije moguće pronaći trenutačno direktorij: %s: %s\n"
+msgstr "%s: nije moguće pronaći trenutni direktorij: %s: %s\n"
 
 #: builtins/common.c:701 builtins/common.c:703
 #, c-format
 msgid "%s: ambiguous job spec"
-msgstr "%s: dvosmisleni pokazatelj posla"
+msgstr "%s: višeznačni pokazatelj posla"
 
 #: builtins/common.c:964
 msgid "help not available in this version"
 msgstr "u ovoj inačici pomoć nije ugrađena"
 
-#: builtins/common.c:1008 builtins/set.def:953 variables.c:3814
+#: builtins/common.c:1008 builtins/set.def:953 variables.c:3839
 #, c-format
 msgid "%s: cannot unset: readonly %s"
 msgstr "%s: nije moguće poništiti: %s je moguće samo čitati"
 
-#: builtins/common.c:1013 builtins/set.def:932 variables.c:3819
+#: builtins/common.c:1013 builtins/set.def:932 variables.c:3844
 #, c-format
 msgid "%s: cannot unset"
 msgstr "%s: nije moguće poništiti"
@@ -367,7 +363,7 @@ msgstr "upozorenje: opcija -C možda neće raditi prema očekivanju"
 
 #: builtins/complete.def:838
 msgid "not currently executing completion function"
-msgstr "trenutačno se ne izvršava funkcija kompletiranja"
+msgstr "trenutno se ne izvršava funkcija kompletiranja"
 
 #: builtins/declare.def:134
 msgid "can only be used in a function"
@@ -378,13 +374,13 @@ msgstr "može se koristiti samo u funkciji"
 msgid "%s: reference variable cannot be an array"
 msgstr "%s: referentna varijabla ne može biti polje"
 
-#: builtins/declare.def:374 variables.c:3360
+#: builtins/declare.def:374 variables.c:3385
 #, c-format
 msgid "%s: nameref variable self references not allowed"
 msgstr "%s: varijabla nameref ukazuje na samu sebe, a to nije dopušteno"
 
-#: builtins/declare.def:379 variables.c:2079 variables.c:3279 variables.c:3287
-#: variables.c:3357
+#: builtins/declare.def:379 variables.c:2104 variables.c:3304 variables.c:3312
+#: variables.c:3382
 #, c-format
 msgid "%s: circular name reference"
 msgstr "%s: kružna referencija na ime"
@@ -398,7 +394,7 @@ msgstr "„%s“: nevaljano ime varijable za referenciju na ime"
 msgid "cannot use `-f' to make functions"
 msgstr "„-f“ se ne može koristiti za definiranje funkcije"
 
-#: builtins/declare.def:526 execute_cmd.c:5981
+#: builtins/declare.def:526 execute_cmd.c:5986
 #, c-format
 msgid "%s: readonly function"
 msgstr "%s: funkcija samo za čitanje"
@@ -452,7 +448,7 @@ msgstr "%s: nije dinamički učitan"
 msgid "%s: cannot delete: %s"
 msgstr "%s: nije moguće izbrisati: %s"
 
-#: builtins/evalfile.c:138 builtins/hash.def:185 execute_cmd.c:5813
+#: builtins/evalfile.c:138 builtins/hash.def:185 execute_cmd.c:5818
 #, c-format
 msgid "%s: is a directory"
 msgstr "%s: to je direktorij"
@@ -497,22 +493,23 @@ msgstr "Ima zaustavljenih poslova.\n"
 msgid "There are running jobs.\n"
 msgstr "Ima pokrenutih poslova.\n"
 
-#: builtins/fc.def:267
+#: builtins/fc.def:275 builtins/fc.def:373 builtins/fc.def:417
 msgid "no command found"
 msgstr "naredba nije pronađena"
 
-#: builtins/fc.def:325 builtins/fc.def:359 builtins/fc.def:388
+#: builtins/fc.def:363 builtins/fc.def:368 builtins/fc.def:407
+#: builtins/fc.def:412
 msgid "history specification"
 msgstr "prikaz povijesti naredbi"
 
-#: builtins/fc.def:409
+#: builtins/fc.def:444
 #, c-format
 msgid "%s: cannot open temp file: %s"
 msgstr "%s: nije moguće otvoriti privremenu datoteku: %s"
 
 #: builtins/fg_bg.def:152 builtins/jobs.def:284
 msgid "current"
-msgstr "trenutačno"
+msgstr "trenutno"
 
 #: builtins/fg_bg.def:161
 #, c-format
@@ -601,7 +598,7 @@ msgstr "mjesto u povijesti naredbi"
 #: builtins/history.def:340
 #, c-format
 msgid "%s: invalid timestamp"
-msgstr "%s: nevaljana vremenska oznaka"
+msgstr "%s: nevaljani vremenski žig"
 
 #: builtins/history.def:451
 #, c-format
@@ -713,7 +710,7 @@ msgstr "%s: nevaljani argument"
 
 #: builtins/pushd.def:480
 msgid "<no current directory>"
-msgstr "<nema trenutačnog direktorija>"
+msgstr "<nema trenutnog direktorija>"
 
 #: builtins/pushd.def:524
 msgid "directory stack empty"
@@ -721,7 +718,7 @@ msgstr "snop direktorija je prazan"
 
 #: builtins/pushd.def:526
 msgid "directory stack index"
-msgstr "indeks stoga direktorija"
+msgstr "indeks snopa direktorija"
 
 #: builtins/pushd.def:701
 msgid ""
@@ -746,7 +743,7 @@ msgid ""
 "by\n"
 "\tdirs when invoked without options, starting with zero."
 msgstr ""
-"Pokaže popis trenutačno zapamćenih direktorija. Direktoriji se unose\n"
+"Pokaže popis trenutno zapamćenih direktorija. Direktoriji se unose\n"
 "    na popis pomoću naredbe „pushd“, a s naredbom „popd“ se uklanjaju.\n"
 "\n"
 "    Opcije:\n"
@@ -788,7 +785,7 @@ msgid ""
 "    The `dirs' builtin displays the directory stack."
 msgstr ""
 "Doda direktorij na vrh snopa direktorija ili zarotira snop tako da\n"
-"    učini novi vrh snopa trenutačnim radnim direktorijem. Bez argumenata\n"
+"    učini novi vrh snopa trenutnim radnim direktorijem. Bez argumenata\n"
 "    razmijeni pozicije dva direktorija na vrhu snopa.\n"
 "\n"
 "    Opcije:\n"
@@ -805,9 +802,9 @@ msgstr ""
 "             desne strane popisa prikazanoga s „dirs“) postane novi vrh "
 "snopa.\n"
 "      DIREKTORIJ  Doda DIREKTORIJ na vrh snopa direktorija i\n"
-"                    učini ga novim aktualnim radnim direktorijem.\n"
+"                    učini ga novim trenutnim radnim direktorijem.\n"
 "\n"
-"      Naredba „dirs“ prikaže trenutačni sadržaj snopa direktorija."
+"      Naredba „dirs“ prikaže trenutni sadržaj snopa direktorija."
 
 #: builtins/pushd.def:748
 msgid ""
@@ -844,7 +841,7 @@ msgstr ""
 "           strane popisa prikazanoga s „dirs“. Na primjer.: „popd -0“\n"
 "           ukloni zadnji, a „popd -1“ ukloni predzadnji direktorij.\n"
 "\n"
-"    Naredba „dirs“ prikaže trenutačni sadržaj snopa direktorija."
+"    Naredba „dirs“ prikaže trenutni sadržaj snopa direktorija."
 
 #: builtins/read.def:280
 #, c-format
@@ -854,7 +851,7 @@ msgstr "%s: nevaljana specifikacija za istek vremena"
 #: builtins/read.def:755
 #, c-format
 msgid "read error: %d: %s"
-msgstr "greška čitanja: %d: %s"
+msgstr "greška pri čitanju: %d: %s"
 
 #: builtins/return.def:68
 msgid "can only `return' from a function or sourced script"
@@ -1046,52 +1043,52 @@ msgstr "execute_coproc(): coproc [%d:%s] još uvijek postoji"
 msgid "pipe error"
 msgstr "greška cijevi"
 
-#: execute_cmd.c:4792
+#: execute_cmd.c:4793
 #, c-format
 msgid "eval: maximum eval nesting level exceeded (%d)"
 msgstr "eval: prekoračena je dopuštena razina eval gniježđenja (%d)"
 
-#: execute_cmd.c:4804
+#: execute_cmd.c:4805
 #, c-format
 msgid "%s: maximum source nesting level exceeded (%d)"
 msgstr "%s: prekoračena je dopuštena razina source gniježđenja (%d)"
 
-#: execute_cmd.c:4912
+#: execute_cmd.c:4913
 #, c-format
 msgid "%s: maximum function nesting level exceeded (%d)"
 msgstr "%s: prekoračena je dopuštena razina gniježđenja funkcije (%d)"
 
-#: execute_cmd.c:5466
+#: execute_cmd.c:5467
 #, c-format
 msgid "%s: restricted: cannot specify `/' in command names"
 msgstr "%s: ograničeni način: znak „/“ nije dopušten u imenima naredba"
 
-#: execute_cmd.c:5569
+#: execute_cmd.c:5574
 #, c-format
 msgid "%s: command not found"
 msgstr "%s: naredba nije pronađena"
 
-#: execute_cmd.c:5811
+#: execute_cmd.c:5816
 #, c-format
 msgid "%s: %s"
 msgstr "%s: %s"
 
-#: execute_cmd.c:5849
+#: execute_cmd.c:5854
 #, c-format
 msgid "%s: %s: bad interpreter"
 msgstr "%s: %s: loši interpreter"
 
-#: execute_cmd.c:5886
+#: execute_cmd.c:5891
 #, c-format
 msgid "%s: cannot execute binary file: %s"
 msgstr "%s: binarnu datoteku %s nije moguće pokrenuti/izvršiti"
 
-#: execute_cmd.c:5972
+#: execute_cmd.c:5977
 #, c-format
 msgid "`%s': is a special builtin"
 msgstr "„%s“ je specijalna funkcija ugrađena u ljusku"
 
-#: execute_cmd.c:6024
+#: execute_cmd.c:6029
 #, c-format
 msgid "cannot duplicate fd %d to fd %d"
 msgstr "nije moguće kopirati deskriptor datoteke %d u deskriptor datoteke %d"
@@ -1114,7 +1111,7 @@ msgstr "vrijednost se može dodijeliti samo varijabli"
 
 #: expr.c:530
 msgid "syntax error in variable assignment"
-msgstr "sintaktička greška zadavanja varijable"
+msgstr "sintaktička greška u zadavanju varijable"
 
 #: expr.c:544 expr.c:911
 msgid "division by 0"
@@ -1175,7 +1172,7 @@ msgstr "%s: greška u izrazu\n"
 msgid "getcwd: cannot access parent directories"
 msgstr "getcwd(): nije moguće pristupiti nadređenim direktorijima"
 
-#: input.c:99 subst.c:6061
+#: input.c:99 subst.c:6069
 #, c-format
 msgid "cannot reset nodelay mode for fd %d"
 msgstr "ne može se onemogućiti nodelay način za deskriptor datoteke %d"
@@ -1254,7 +1251,7 @@ msgstr "Gotovo(%d)"
 #: jobs.c:1911
 #, c-format
 msgid "Exit %d"
-msgstr "Izlaz %d"
+msgstr "Završi %d"
 
 #: jobs.c:1914
 msgid "Unknown status"
@@ -1263,7 +1260,7 @@ msgstr "Nepoznati status"
 #: jobs.c:2001
 #, c-format
 msgid "(core dumped) "
-msgstr "(stanje memorije zapisano) "
+msgstr "(**krah**: stanje (dump) memorije je zapisano!) "
 
 #: jobs.c:2020
 #, c-format
@@ -1317,7 +1314,7 @@ msgstr "%s: redak %d: "
 #: jobs.c:4334 nojobs.c:919
 #, c-format
 msgid " (core dumped)"
-msgstr " (stanje memorije zapisano)"
+msgstr " (**krah**: stanje (dump) memorije je zapisano!)"
 
 #: jobs.c:4346 jobs.c:4359
 #, c-format
@@ -1509,7 +1506,7 @@ msgid "make_redirection: redirection instruction `%d' out of range"
 msgstr ""
 "make_redirection(): instrukcija za preusmjeravanje „%d“ je izvan raspona"
 
-#: parse.y:2392
+#: parse.y:2393
 #, c-format
 msgid ""
 "shell_getc: shell_input_line_size (%zu) exceeds SIZE_MAX (%lu): line "
@@ -1518,103 +1515,103 @@ msgstr ""
 "shell_getc(): shell_input_line_size (%zu) je veća od SIZE_MAX (%lu): "
 "skraćuje se"
 
-#: parse.y:2825
+#: parse.y:2826
 msgid "maximum here-document count exceeded"
 msgstr "maksimalni broj za here-document je prekoračeni"
 
-#: parse.y:3580 parse.y:3956 parse.y:4555
+#: parse.y:3581 parse.y:3957 parse.y:4556
 #, c-format
 msgid "unexpected EOF while looking for matching `%c'"
 msgstr "neočekivani EOF pri traženju odgovarajućeg „%c“"
 
-#: parse.y:4695
+#: parse.y:4696
 msgid "unexpected EOF while looking for `]]'"
 msgstr "neočekivani EOF pri traženju „]]“"
 
-#: parse.y:4700
+#: parse.y:4701
 #, c-format
 msgid "syntax error in conditional expression: unexpected token `%s'"
 msgstr "sintaktička greška u uvjetnom izrazu: neočekivani token „%s“"
 
-#: parse.y:4704
+#: parse.y:4705
 msgid "syntax error in conditional expression"
 msgstr "sintaktička greška u uvjetnom izrazu"
 
-#: parse.y:4782
+#: parse.y:4783
 #, c-format
 msgid "unexpected token `%s', expected `)'"
 msgstr "neočekivani token „%s“ umjesto očekivane „)“"
 
-#: parse.y:4786
+#: parse.y:4787
 msgid "expected `)'"
 msgstr "očekivana je „)“"
 
-#: parse.y:4814
+#: parse.y:4815
 #, c-format
 msgid "unexpected argument `%s' to conditional unary operator"
 msgstr "neočekivani argument „%s“ uvjetnom unarnom operatoru"
 
-#: parse.y:4818
+#: parse.y:4819
 msgid "unexpected argument to conditional unary operator"
 msgstr "neočekivani argument za uvjetni unarni operator"
 
-#: parse.y:4864
+#: parse.y:4865
 #, c-format
 msgid "unexpected token `%s', conditional binary operator expected"
-msgstr "neočekivani token „%s“; očekivao se uvjetni binarni operator"
+msgstr "neočekivani token „%s“; očekivan je uvjetni binarni operator"
 
-#: parse.y:4868
+#: parse.y:4869
 msgid "conditional binary operator expected"
-msgstr "očekivao se uvjetni binarni operator"
+msgstr "očekivan je uvjetni binarni operator"
 
-#: parse.y:4890
+#: parse.y:4891
 #, c-format
 msgid "unexpected argument `%s' to conditional binary operator"
 msgstr "neočekivani argument „%s“ za uvjetni binarni operator"
 
-#: parse.y:4894
+#: parse.y:4895
 msgid "unexpected argument to conditional binary operator"
 msgstr "neočekivani argument za uvjetni binarni operator"
 
-#: parse.y:4905
+#: parse.y:4906
 #, c-format
 msgid "unexpected token `%c' in conditional command"
 msgstr "neočekivani token „%c“ u uvjetnoj naredbi"
 
-#: parse.y:4908
+#: parse.y:4909
 #, c-format
 msgid "unexpected token `%s' in conditional command"
 msgstr "neočekivani token „%s“ u uvjetnoj naredbi"
 
-#: parse.y:4912
+#: parse.y:4913
 #, c-format
 msgid "unexpected token %d in conditional command"
 msgstr "neočekivani token %d u uvjetnoj naredbi"
 
-#: parse.y:6335
+#: parse.y:6336
 #, c-format
 msgid "syntax error near unexpected token `%s'"
 msgstr "sintaktička greška blizu neočekivanog tokena „%s“"
 
-#: parse.y:6354
+#: parse.y:6355
 #, c-format
 msgid "syntax error near `%s'"
 msgstr "sintaktička greška blizu „%s“"
 
-#: parse.y:6364
+#: parse.y:6365
 msgid "syntax error: unexpected end of file"
 msgstr "sintaktička greška: neočekivani kraj datoteke"
 
-#: parse.y:6364
+#: parse.y:6365
 msgid "syntax error"
 msgstr "sintaktička greška"
 
-#: parse.y:6427
+#: parse.y:6428
 #, c-format
 msgid "Use \"%s\" to leave the shell.\n"
 msgstr "Koristite \"%s\" da napustite ljusku.\n"
 
-#: parse.y:6592
+#: parse.y:6602
 msgid "unexpected EOF while looking for matching `)'"
 msgstr "neočekivani EOF pri traženju odgovarajuće „)“"
 
@@ -1664,7 +1661,7 @@ msgstr "deskriptor datoteke je izvan raspona"
 #: redir.c:204
 #, c-format
 msgid "%s: ambiguous redirect"
-msgstr "%s: dvosmisleno preusmjeravanje"
+msgstr "%s: višeznačno preusmjeravanje"
 
 #: redir.c:208
 #, c-format
@@ -1696,11 +1693,11 @@ msgstr "greška  preusmjeravanja: nije moguće kopirati deskriptor datoteke"
 
 #: shell.c:347
 msgid "could not find /tmp, please create!"
-msgstr "nije bilo moguće pronaći /tmp; napravite taj direktorij!"
+msgstr "nije moguće pronaći /tmp; napravite taj direktorij!"
 
 #: shell.c:351
 msgid "/tmp must be a valid directory name"
-msgstr "/tmp mora biti ispravno ime direktorija"
+msgstr "/tmp mora biti valjano ime direktorija"
 
 #: shell.c:804
 msgid "pretty-printing mode ignored in interactive shells"
@@ -1793,8 +1790,9 @@ msgstr "bash Web stranica: <http://www.gnu.org/software/bash>\n"
 msgid "General help using GNU software: <http://www.gnu.org/gethelp/>\n"
 msgstr ""
 "Općenita pomoć za korištenje GNU softvera: <http://www.gnu.org/gethelp/>\n"
+"Prijavite primjedbe i greške u prijevoda na lokalizacija@linux.hr/\n"
 
-#: sig.c:752
+#: sig.c:757
 #, c-format
 msgid "sigprocmask: %d: invalid operation"
 msgstr "sigprocmask(): %d: nevaljana operacija"
@@ -1805,15 +1803,15 @@ msgstr "Lažni signal"
 
 #: siglist.c:50
 msgid "Hangup"
-msgstr "Završetak"
+msgstr "Poklopi"
 
 #: siglist.c:54
 msgid "Interrupt"
-msgstr "Prekid"
+msgstr "Prekini"
 
 #: siglist.c:58
 msgid "Quit"
-msgstr "Izlaz"
+msgstr "Završi"
 
 #: siglist.c:62
 msgid "Illegal instruction"
@@ -1833,7 +1831,7 @@ msgstr "EMT instrukcija"
 
 #: siglist.c:82
 msgid "Floating point exception"
-msgstr "Iznimka/greška u radu s realnim brojem"
+msgstr "Iznimka (broja) s pomičnim zarezom"
 
 #: siglist.c:86
 msgid "Killed"
@@ -1841,7 +1839,7 @@ msgstr "Ubijen"
 
 #: siglist.c:90
 msgid "Bus error"
-msgstr "Greška adresiranja"
+msgstr "Greška sabirnice"
 
 #: siglist.c:94
 msgid "Segmentation fault"
@@ -1929,7 +1927,7 @@ msgstr "HFT ulazni podaci čekaju"
 
 #: siglist.c:186
 msgid "power failure imminent"
-msgstr "prekid napajanja je neizbježan"
+msgstr "nestanak struje je neizbježan"
 
 #: siglist.c:190
 msgid "system crash imminent"
@@ -1978,95 +1976,95 @@ msgstr "%s: nije moguće dodijeliti popis elementu polja"
 msgid "cannot make pipe for process substitution"
 msgstr "nije moguće napraviti cijev za zamjenu procesa"
 
-#: subst.c:5977
+#: subst.c:5985
 msgid "cannot make child for process substitution"
 msgstr "nije moguće napraviti potomka za zamjenu procesa"
 
-#: subst.c:6051
+#: subst.c:6059
 #, c-format
 msgid "cannot open named pipe %s for reading"
 msgstr "nije moguće otvoriti imenovanu cijev %s za čitanje"
 
-#: subst.c:6053
+#: subst.c:6061
 #, c-format
 msgid "cannot open named pipe %s for writing"
 msgstr "nije moguće otvoriti imenovanu cijev %s za pisanje"
 
-#: subst.c:6076
+#: subst.c:6084
 #, c-format
 msgid "cannot duplicate named pipe %s as fd %d"
 msgstr "nije moguće kopirati imenovanu cijev %s kao deskriptor datoteke %d"
 
-#: subst.c:6200
+#: subst.c:6213
 msgid "command substitution: ignored null byte in input"
 msgstr "nevaljana supstitucija: ignorirani NULL bajt na ulazu"
 
-#: subst.c:6340
+#: subst.c:6353
 msgid "cannot make pipe for command substitution"
 msgstr "nije moguće napraviti cijev za zamjenu naredbi"
 
-#: subst.c:6384
+#: subst.c:6397
 msgid "cannot make child for command substitution"
 msgstr "nije moguće napraviti potomka za zamjenu naredbi"
 
-#: subst.c:6410
+#: subst.c:6423
 msgid "command_substitute: cannot duplicate pipe as fd 1"
 msgstr ""
 "command_substitute(): nije moguće kopirati cijev kao deskriptor datoteke 1"
 
-#: subst.c:6861 subst.c:9916
+#: subst.c:6883 subst.c:9952
 #, c-format
 msgid "%s: invalid variable name for name reference"
 msgstr "%s: nevaljano ime varijable za naziv referencije"
 
-#: subst.c:6957 subst.c:6975 subst.c:7147
+#: subst.c:6979 subst.c:6997 subst.c:7169
 #, c-format
 msgid "%s: invalid indirect expansion"
 msgstr "%s: nevaljana indirektna ekspanzija"
 
-#: subst.c:6991 subst.c:7155
+#: subst.c:7013 subst.c:7177
 #, c-format
 msgid "%s: invalid variable name"
 msgstr "„%s“: nevaljano ime varijable"
 
-#: subst.c:7234
+#: subst.c:7256
 #, c-format
 msgid "%s: parameter not set"
 msgstr "%s: parametar nije postavljen"
 
-#: subst.c:7236
+#: subst.c:7258
 #, c-format
 msgid "%s: parameter null or not set"
 msgstr "%s: prazni parametar ili nije postavljen"
 
-#: subst.c:7481 subst.c:7496
+#: subst.c:7503 subst.c:7518
 #, c-format
 msgid "%s: substring expression < 0"
 msgstr "%s: rezultat od izraza dijela stringa < 0"
 
-#: subst.c:9245 subst.c:9266
+#: subst.c:9281 subst.c:9302
 #, c-format
 msgid "%s: bad substitution"
 msgstr "%s: loša supstitucija"
 
-#: subst.c:9354
+#: subst.c:9390
 #, c-format
 msgid "$%s: cannot assign in this way"
 msgstr "$%s: nije moguće dodijeliti na ovaj način"
 
-#: subst.c:9778
+#: subst.c:9814
 msgid ""
 "future versions of the shell will force evaluation as an arithmetic "
 "substitution"
 msgstr ""
 "buduće inačice ljuske će prisiliti procjenu kao aritmetičku supstituciju"
 
-#: subst.c:10331
+#: subst.c:10367
 #, c-format
 msgid "bad substitution: no closing \"`\" in %s"
 msgstr "loša supstitucija: nema zaključnoga znaka „`“ u %s"
 
-#: subst.c:11393
+#: subst.c:11434
 #, c-format
 msgid "no match: %s"
 msgstr "nema podudaranja: %s"
@@ -2089,21 +2087,21 @@ msgstr "očekivana je „)“"
 msgid "`)' expected, found %s"
 msgstr "očekuje se „)“, nađen %s"
 
-#: test.c:466 test.c:796
+#: test.c:466 test.c:799
 #, c-format
 msgid "%s: binary operator expected"
-msgstr "%s: očekuje se binarni operator"
+msgstr "%s: očekivan je binarni operator"
 
-#: test.c:753 test.c:756
+#: test.c:756 test.c:759
 #, c-format
 msgid "%s: unary operator expected"
-msgstr "%s: očekuje se unarni operator"
+msgstr "%s: očekivan je unarni operator"
 
-#: test.c:878
+#: test.c:881
 msgid "missing `]'"
 msgstr "nedostaje „]“"
 
-#: test.c:896
+#: test.c:899
 #, fuzzy, c-format
 msgid "syntax error: `%s' unexpected"
 msgstr "sintaktička greška: neočekivani „;“ znak"
@@ -2130,7 +2128,7 @@ msgstr ""
 "run_pending_traps: signalom manipulira SIG_DFL, opet šalje %d (%s) na samoga "
 "sebe"
 
-#: trap.c:476
+#: trap.c:487
 #, c-format
 msgid "trap_handler: bad signal %d"
 msgstr "trap_handler(): loši signal %d"
@@ -2145,62 +2143,62 @@ msgstr "greška pri importiranju definicije funkcije za „%s“"
 msgid "shell level (%d) too high, resetting to 1"
 msgstr "razina ljuske (%d) je previsoka, vraća se na 1"
 
-#: variables.c:2649
+#: variables.c:2674
 msgid "make_local_variable: no function context at current scope"
-msgstr "make_local_variable(): u trenutačnom području nema konteksta funkcije"
+msgstr "make_local_variable(): u trenutnom području nema konteksta funkcije"
 
-#: variables.c:2668
+#: variables.c:2693
 #, c-format
 msgid "%s: variable may not be assigned value"
 msgstr "%s: varijabli se ne može dodijeliti vrijednost"
 
-#: variables.c:3450
+#: variables.c:3475
 #, c-format
 msgid "%s: assigning integer to name reference"
 msgstr "%s: nazivu referencije se pripisuje cijeli broj"
 
-#: variables.c:4379
+#: variables.c:4404
 msgid "all_local_variables: no function context at current scope"
-msgstr "all_local_variables(): u trenutačnom području nema konteksta funkcije"
+msgstr "all_local_variables(): u trenutnom području nema konteksta funkcije"
 
-#: variables.c:4746
+#: variables.c:4771
 #, c-format
 msgid "%s has null exportstr"
 msgstr "*** %s ima prazni exportstr"
 
-#: variables.c:4751 variables.c:4760
+#: variables.c:4776 variables.c:4785
 #, c-format
 msgid "invalid character %d in exportstr for %s"
 msgstr "*** nevaljani znak %d u exportstr za %s"
 
-#: variables.c:4766
+#: variables.c:4791
 #, c-format
 msgid "no `=' in exportstr for %s"
 msgstr "*** nema „=“ u exportstr za %s"
 
-#: variables.c:5306
+#: variables.c:5331
 msgid "pop_var_context: head of shell_variables not a function context"
 msgstr "pop_var_context(): vrh od „shell_variables“ nije funkcijski kontekst"
 
-#: variables.c:5319
+#: variables.c:5344
 msgid "pop_var_context: no global_variables context"
 msgstr "pop_var_context(): nije „global_variables“ kontekst"
 
-#: variables.c:5399
+#: variables.c:5424
 msgid "pop_scope: head of shell_variables not a temporary environment scope"
 msgstr "pop_scope(): vrh od „shell_variables“ nije privremeni kontekst okoline"
 
-#: variables.c:6362
+#: variables.c:6387
 #, c-format
 msgid "%s: %s: cannot open as FILE"
 msgstr "%s: %s: nije moguće otvoriti kao DATOTEKU"
 
-#: variables.c:6367
+#: variables.c:6392
 #, c-format
 msgid "%s: %s: invalid value for trace file descriptor"
 msgstr "%s: %s: nevaljana vrijednost za praćenje deskriptora datoteke"
 
-#: variables.c:6412
+#: variables.c:6437
 #, c-format
 msgid "%s: %s: compatibility value out of range"
 msgstr "%s: %s vrijednost za kompatibilnost je izvan raspona"
@@ -2225,7 +2223,7 @@ msgstr "GNU bash, inačica %s (%s)\n"
 
 #: version.c:91 version2.c:91
 msgid "This is free software; you are free to change and redistribute it."
-msgstr "Ovo je slobodni softver; slobodno ga mijenjajte i dijelite."
+msgstr "Ovo je slobodan softver: slobodno ga mijenjajte i dijelite."
 
 #: version.c:92 version2.c:92
 msgid "There is NO WARRANTY, to the extent permitted by law."
@@ -2791,14 +2789,14 @@ msgid ""
 "    Returns 0 unless the shell is not executing a shell function or EXPR\n"
 "    is invalid."
 msgstr ""
-"Vrati kontekst trenutačnoga poziva potprogramu.\n"
+"Vrati kontekst trenutnog poziva potprogramu.\n"
 "\n"
 "    Bez IZRAZA, vrati „$line $filename“. Ako je dȃn IZRAZ, vrati\n"
 "    „$line $subroutine $filename“; ova dodatna informacija može poslužiti\n"
 "    za „stack trace“.\n"
 "\n"
-"    Vrijednost IZRAZA pokazuje koliko se treba vratiti unazad od\n"
-"    trenutačne pozicije, s time da je pozicija 0 trenutačna pozicija.\n"
+"    Vrijednost IZRAZA pokazuje koliko se treba vratiti unatrag od\n"
+"    trenutne pozicije, s time da je pozicija 0 trenutna pozicija.\n"
 "\n"
 "    Završi s kȏdom 0 osim ako ljuska ne izvršava ljuskinu funkciju\n"
 "    ili je IZRAZ nevaljani."
@@ -2847,16 +2845,16 @@ msgid ""
 "when\n"
 "    -P is used; non-zero otherwise."
 msgstr ""
-"Promjeni trenutačni direktorij.\n"
+"Promjeni trenutni direktorij.\n"
 "\n"
-"    Promijeni trenutačni direktorij u dȃni DIREKTORIJ. Zadano, DIREKTORIJ\n"
+"    Promijeni trenutni direktorij u dȃni DIREKTORIJ. Zadano, DIREKTORIJ\n"
 "    je vrijednost varijable HOME.\n"
 "\n"
 "    Varijabla CDPATH definira staze (direktorije) po kojima se\n"
 "    traži dȃni DIREKTORIJ.\n"
 "\n"
 "    Nazivi direktorija (staza) u CDPATH su razdvojeni s dvotočkom (:);\n"
-"    prazni naziv za direktorij je isto kao i trenutačni direktorij (.).\n"
+"    prazni naziv za direktorij je isto kao i trenutni direktorij (.).\n"
 "    Ako dȃni DIREKTORIJ započinje s kosom crtom (/), onda se CDPATH\n"
 "    ne koristi.\n"
 "\n"
@@ -2871,7 +2869,7 @@ msgstr ""
 "      -P    rabi fizičku strukturu direktorija umjesto da slijedi\n"
 "              simboličke veze; simboličke veze DIREKTORIJa\n"
 "              razriješi prije procesiranja „..“ instancije DIREKTORIJa\n"
-"      -e    ako je dȃna s opcijom „-P“, i trenutačni radni direktorij nije\n"
+"      -e    ako je dȃna s opcijom „-P“, i trenutni radni direktorij nije\n"
 "              moguće uspješno odrediti nakon uspješne promjene direktorija,\n"
 "              „cd“ završi s kȏdom različitim od 0.\n"
 "      -@    opiše proširene atribute povezane s datotekom kao direktorij\n"
@@ -2899,16 +2897,16 @@ msgid ""
 "    Returns 0 unless an invalid option is given or the current directory\n"
 "    cannot be read."
 msgstr ""
-"Ispiše ime trenutačnoga radnog direktorija.\n"
+"Ispiše ime trenutnog radnog direktorija.\n"
 "\n"
 "    Opcije:\n"
-"      -L   ispiše vrijednost od $PWD ako sadrži trenutačni radni direktorij\n"
+"      -L   ispiše vrijednost od $PWD ako sadrži trenutni radni direktorij\n"
 "      -P   ispiše stvarnu fizičku stazu do direktorija bez simboličkih veza\n"
 "\n"
 "    U zadanom stanju „pwd“ se ponaša kao da je aktivna „-L“ opcija.\n"
 "\n"
 "    Završi s kȏdom 0 osim ako nije dȃna nevaljana opcija\n"
-"    ili se trenutačni radni direktorij ne može pročitati."
+"    ili se trenutni radni direktorij ne može pročitati."
 
 #: builtins.c:442
 msgid ""
@@ -3082,7 +3080,6 @@ msgstr ""
 "    dogodila se greška pri dodijeli ili ljuska ne izvrši funkciju."
 
 #: builtins.c:557
-#, fuzzy
 msgid ""
 "Write arguments to the standard output.\n"
 "    \n"
@@ -3124,7 +3121,7 @@ msgstr ""
 "Dȃne argumente ispiše na standardni izlaz.\n"
 "\n"
 "    Ispiše dȃne argumente na standardni izlaz, međusobno odvojene s\n"
-"    jednim razmakom (bjelina) i na kraju s novim retkom.\n"
+"    jednim razmakom (bjelinom) i na kraju s novim retkom.\n"
 "\n"
 "    Opcije:\n"
 "      -n   ne pripoji novi redak (znak novog retka)\n"
@@ -3146,10 +3143,14 @@ msgstr ""
 "      \\t   horizontalni tabulator\n"
 "      \\v   vertikalni tabulator\n"
 "      \\\\     backslash (\\)\n"
-"      \\0NNN   znak s ASCII kȏdom NNN (oktalni, 1 do 3 znamenke)\n"
-"      \\xHH    znak s ASCII kȏdom HH (heksadecimalni, 1 do 2 znamenke)\n"
+"      \\0NNN   znak s ASCII kȏdom NNN (oktalni, 1 do 3 oktalne znamenke)\n"
+"      \\xHH    osmobitni znak čija je vrijednost HH (heksadecimalna)\n"
+"      \\uHHHH  unikodni znak čija je vrijednost HHHH  (heksadecimalna)\n"
+"                 HHHH može biti od 1 do 4 heksadecimalne znamenke\n"
+"      \\UHHHHHHHH  unikodni znak čija je vrijednost HHHH  (heksadecimalna)\n"
+"                     HHHHHHHH može biti od 1 do 8 heksadecimalnih znamenki\n"
 "\n"
-"    Završi s kȏdom 0 osim ako se ne dogodi greška pisanja."
+"    Završi s kȏdom 0 osim ako se ne dogodi greška pri pisanju."
 
 #: builtins.c:597
 msgid ""
@@ -3169,7 +3170,7 @@ msgstr ""
 "redak).\n"
 "    Opcijom „-n“ može se isključiti pripajanje znaka za novi redak.\n"
 "\n"
-"    Završi s kȏdom 0 ako se ne dogodi greška pisanja."
+"    Završi s kȏdom 0 ako se ne dogodi greška pri pisanju."
 
 #: builtins.c:612
 msgid ""
@@ -3349,7 +3350,7 @@ msgstr ""
 "\n"
 "    Izvrši dȃnu NAREDBU, zamijenivši ovu ljusku s ovim programom.\n"
 "    Eventualni ARGUMENTI postanu argumenti NAREDBE. Ako NAREDBA nije\n"
-"    specificirana, sva preusmjeravanja se dogode u trenutačnoj ljusci.\n"
+"    specificirana, sva preusmjeravanja se dogode u trenutnoj ljusci.\n"
 "\n"
 "    Opcije:\n"
 "      -a IME   dȁde IME kao nulti argument NAREDBI\n"
@@ -3448,8 +3449,8 @@ msgstr ""
 "Premjesti posao u interaktivni način.\n"
 "\n"
 "    Smjesti posao JOBSPEC u interaktivni način i učini ga\n"
-"    trenutačnim poslom. Bez dȃnoga JOBSPEC, ljuska rabi svoj pojam\n"
-"    o trenutačnom poslu.\n"
+"    trenutnim poslom. Bez dȃnoga JOBSPEC, ljuska rabi svoj pojam\n"
+"    o trenutnom poslu.\n"
 "\n"
 "    Završi s kȏdom naredbe smještene u interaktivni način\n"
 "    ili s neuspjehom ako se dogodi greška."
@@ -3471,7 +3472,7 @@ msgstr ""
 "\n"
 "    Smjesti poslove idenificirane sa svakim JOBSPEC u pozadinu, kao da su\n"
 "    pokrenuti s „&“. Bez dȃnih JOBSPEC, ljuska rabi svoj pojam\n"
-"    o trenutačnom poslu.\n"
+"    o trenutnom poslu.\n"
 "\n"
 "    Završi s kȏdom 0 osim ako kontrola nad poslovima nije omogućena\n"
 "    ili se dogodila greška."
@@ -3597,12 +3598,12 @@ msgstr ""
 "      -c   počisti povijest iz memorije; zaboravi sve izvršene naredbe\n"
 "      -d   POZICIJA  izbriše redak povijesti na POZICIJI\n"
 "\n"
-"      -a   pripoji trenutačnu povijest „povijesnoj“ datoteci\n"
+"      -a   pripoji trenutnu povijest „povijesnoj“ datoteci\n"
 "      -n   pripoji sve nepročitane retke povijesne datoteke\n"
-"             trenutačnom popisu povijesti\n"
+"             trenutnom popisu povijesti\n"
 "      -r   pročita i pripoji povijesnu datoteku\n"
-"             trenutačnom popisu povijesti\n"
-"      -w   trenutačnu povijest zapiše u povijesnu datoteku\n"
+"             trenutnom popisu povijesti\n"
+"      -w   trenutnu povijest zapiše u povijesnu datoteku\n"
 "\n"
 "      -p   proširi povijest na svakom ARGUMENTU i prikaže rezultat\n"
 "             bez spremanja u povijesni popis\n"
@@ -3651,7 +3652,7 @@ msgstr ""
 "      -l   pokaže i ID-ove procesa uz uobičajene informacije\n"
 "      -n   pokaže samo procese koji su se promijenili od zadnjeg izvješća\n"
 "      -p   pokaže samo ID-ove procesa\n"
-"      -r   ograniči izlaz samo na trenutačno pokrenute poslove\n"
+"      -r   ograniči izlaz samo na trenutno pokrenute poslove\n"
 "      -s   ograniči izlaz samo na zaustavljene poslove\n"
 "\n"
 "    Ako je dȃna opcija -x, „jobs“ zamijeni svaki JOBSPEC\n"
@@ -3678,10 +3679,10 @@ msgid ""
 "    Exit Status:\n"
 "    Returns success unless an invalid option or JOBSPEC is given."
 msgstr ""
-"Ukloni poslove iz trenutačne ljuske.\n"
+"Ukloni poslove iz trenutne ljuske.\n"
 "\n"
 "    Ukloni svaki JOBSPEC argument iz tablice aktivnih poslova.\n"
-"    Bez ikakvih JOBSPEC ljuska rabi svoj pojam o trenutačnom\n"
+"    Bez ikakvih JOBSPEC ljuska rabi svoj pojam o trenutnom\n"
 "    poslu.\n"
 "\n"
 "    Opcije:\n"
@@ -4025,7 +4026,7 @@ msgstr ""
 "    Omogući/onemogući svojstva ljuske ili mijenja vrijednosti položajnih\n"
 "    parametara. Bez opcija ili argumenata „set“ prikaže imena i vrijednosti\n"
 "    svih definiranih varijabli i funkcija u formatu upotrebljivom kao\n"
-"    ulaz za postavljanje/poništavanje trenutačno postavljenih varijabli.\n"
+"    ulaz za postavljanje/poništavanje trenutno postavljenih varijabli.\n"
 "    Dostupne su sljedeće opcije („+“ umjesto „-“ isključi dȃnu opciju):\n"
 "\n"
 "      -a  automatski eksportira nove ili modificirane varijable i funkcije\n"
@@ -4045,7 +4046,7 @@ msgstr ""
 "      -n  pročita, ali ne izvrši naredbe („testiranje“)\n"
 "      -o IME_OPCIJE  omogući IME_OPCIJU (v. niže za dugačka imena opcija)\n"
 "      -P  ne razriješi simboličke veze pri izvršavanju naredbi poput „cd“\n"
-"            koje promjene trenutačni direktorij\n"
+"            koje promjene trenutni direktorij\n"
 "      -p  uključi privilegirani mȏd: datoteke BASH_ENV i ENV se ignoriraju,\n"
 "            funkcije ljuske se ne importiraju iz okoline, a ignoriraju se i\n"
 "            sve SHELLOPTS; taj mȏd se automatski aktivira kȁd god se realni\n"
@@ -4242,9 +4243,9 @@ msgid ""
 "    Returns the status of the last command executed in FILENAME; fails if\n"
 "    FILENAME cannot be read."
 msgstr ""
-"Izvrši naredbe iz datoteke u trenutačnoj ljusci.\n"
+"Izvrši naredbe iz datoteke u trenutnoj ljusci.\n"
 "\n"
-"    Čita i izvrši naredbe iz DATOTEKE u trenutačnoj ljusci.\n"
+"    Čita i izvrši naredbe iz DATOTEKE u trenutnoj ljusci.\n"
 "    Direktorij s DATOTEKOM traži se po stazama sadržanima u varijabli\n"
 "    PATH. Ako su dȃni ikoji ARGUMENTI, oni postaju položajni parametri\n"
 "    tijekom izvršavanja DATOTEKE.\n"
@@ -4420,7 +4421,7 @@ msgstr ""
 "        ! IZRAZ           istina ako IZRAZ neistiniti\n"
 "      IZRAZ1 -a IZRAZ2    istina ako su oba izraza istinita\n"
 "      IZRAZ1 -o IZRAZ2    laž ako su oba izraza neistinita\n"
-"      ARG1 OP ARG2        istina ako je aritmetika ispravna; operator OP je\n"
+"      ARG1 OP ARG2        istina ako je aritmetika valjana; operator OP je\n"
 "                            jedan od: -eq, -ne, -lt, -le, -gt, ili -ge;\n"
 "                            koji znače: jednako, nejednako, manje od, "
 "manje,\n"
@@ -4644,7 +4645,7 @@ msgstr ""
 "    Opcije:\n"
 "      -S    rabi „mekano“ (soft) ograničenje resursa\n"
 "      -H    rabi „tvrdo“ (hard) ograničenje resursa\n"
-"      -a    popis svih trenutačnih ograničenja\n"
+"      -a    popis svih trenutnih ograničenja\n"
 "      -b    maks. veličina međuspremnika utičnice\n"
 "      -c    maks. veličina „core“ datoteka (u kB)\n"
 "      -d    maks. veličina segmenta s procesnim podacima (in kB)\n"
@@ -4669,9 +4670,8 @@ msgstr ""
 "    Nisu sve opisane opcije dostupne na svim platformama.\n"
 "\n"
 "    Ako je specificirani, LIMIT postane nova vrijednost za specificirani\n"
-"    resurs, inače se prikažu trenutačne vrijednosti. Specijalne "
-"vrijednosti,\n"
-"    „soft“, „hard“, i „unlimited“ su trenutačni soft limit, trenutačni hard\n"
+"    resurs, inače se prikažu trenutne vrijednosti. Specijalne vrijednosti,\n"
+"    „soft“, „hard“, i „unlimited“ su trenutni soft limit, trenutni hard\n"
 "    limit i unlimited. Ako nijedna opcija nije specificirana, podrazumijeva\n"
 "    se da je aktivna „-f“ opcija.\n"
 "\n"
@@ -4702,7 +4702,7 @@ msgstr ""
 "Prikaže ili postavi masku prilikom kreiranje datoteke.\n"
 "\n"
 "    Postavi masku datoteke koju kreira korisnik na MODE.\n"
-"    Ako MODE nije dȃn, ispiše trenutačnu vrijednost maske.\n"
+"    Ako MODE nije dȃn, ispiše trenutnu vrijednost maske.\n"
 "\n"
 "    Ako MODE počinje sa znamenkom, interpretira se kao oktalni broj;\n"
 "    inače to je simbolički mode string kakav prihvaća chmod(1).\n"
@@ -4751,7 +4751,7 @@ msgstr ""
 "\n"
 "    Čeka na svaki posao identificirani s ID — to jest indikatorom posla ili\n"
 "    indikatorom procesa — i izvijesti njegov završni status. Ako nije dȃn\n"
-"    ID, čeka na sve trenutačno aktivne potomke, a završni status je nula.\n"
+"    ID, čeka na sve trenutno aktivne potomke, a završni status je nula.\n"
 "    Ako je ID specifikacija posla, čeka na sve procese u cjevovodu tog "
 "posla.\n"
 "\n"
@@ -4781,7 +4781,7 @@ msgstr ""
 "Čeka da proces završi i vrati njegov izlazni status.\n"
 "\n"
 "    Čeka na svaki proces identificirani s PID i izvijesti njegov završni\n"
-"    status. Ako nije dȃn PID, čeka na sve trenutačno aktivne potomke,\n"
+"    status. Ako nije dȃn PID, čeka na sve trenutno aktivne potomke,\n"
 "    a završni status je nula. PID mora biti proces ID.\n"
 "\n"
 "    Završi s kȏdom zadnjeg PID-a, s kȏdom 1 ako je PID nevaljani,\n"
@@ -5196,14 +5196,14 @@ msgstr ""
 "    BASH_VERSION  inačica ovog „bash“ programa\n"
 "    CDPATH        popis direktorija u kojima se traži direktorij\n"
 "                    kȁd argument od „cd“ (direktorij) nije u\n"
-"                    trenutačnom radnom direktoriju\n"
+"                    trenutnom radnom direktoriju\n"
 "    GLOBIGNORE    popis uzoraka koji opisuju imena datoteka koje\n"
 "                    se ignoriraju prilikom ekspanzije imena staza\n"
 "    HISTFILE      ime datoteke koja sadrži povijest vaših naredbi\n"
 "    HISTFILESIZE  maksimalni broj redaka datoteke s povijesti naredba\n"
 "    HISTIGNORE    popis uzoraka koji opisuju naredbe koje ne treba zapisati\n"
 "                    u datoteku koja sadrži povijest vaših naredbi\n"
-"    HISTSIZE      maksimalni broj redaka koje aktualna ljuska može "
+"    HISTSIZE      maksimalni broj redaka koje trenutna ljuska može "
 "dosegnuti\n"
 "    HOME          puni naziv staze do vašega osobnoga direktorija\n"
 "    HOSTNAME      ime računala na kojem se izvršava „bash“\n"
@@ -5217,9 +5217,9 @@ msgstr ""
 "    PROMPT_COMMAND  naredba koja se izvrši prije ispisa primarnoga prompta\n"
 "    PS1           string koji opisuje primarni prompt\n"
 "    PS2           string koji opisuje sekundarni prompt (zadano, „>“)\n"
-"    PWD           puni naziv staze trenutačnoga radnoga direktorija\n"
+"    PWD           puni naziv staze trenutnog radnoga direktorija\n"
 "    SHELLOPTS     popis svih omogućenih opcija ljuske\n"
-"    TERM          naziv vrste trenutačnoga terminala\n"
+"    TERM          naziv vrste trenutnog terminala\n"
 "    TIMEFORMAT    pravilo za format ispisa „time“ statistika\n"
 "    auto_resume   ako nije prazan, učini da se naredbena riječ na "
 "naredbenom\n"
@@ -5271,7 +5271,7 @@ msgstr ""
 "Doda direktorije na snop.\n"
 "\n"
 "    Doda direktorij na vrh snopa direktorija ili zarotira snop tako da\n"
-"    učini novi vrh snopa trenutačnim radnim direktorijem. Bez argumenata\n"
+"    učini novi vrh snopa trenutnim radnim direktorijem. Bez argumenata\n"
 "    razmijeni pozicije dva direktorija na vrhu snopa.\n"
 "\n"
 "    Opcije:\n"
@@ -5290,7 +5290,7 @@ msgstr ""
 "             desne strane popisa prikazanoga s „dirs“) postane novi vrh "
 "snopa.\n"
 "\n"
-"      Naredba „dirs“ prikaže trenutačni sadržaj snopa direktorija.\n"
+"      Naredba „dirs“ prikaže trenutni sadržaj snopa direktorija.\n"
 "\n"
 "    Završi s kȏdom 0 osim ako je dȃna nevaljana opcija\n"
 "    ili nije uspjela promjena direktorija."
@@ -5338,7 +5338,7 @@ msgstr ""
 "             strane popisa prikazanoga s „dirs“. Na primjer.: „popd -0“\n"
 "             ukloni zadnji, a „popd -1“ ukloni predzadnji direktorij.\n"
 "\n"
-"    Naredba „dirs“ prikaže trenutačni sadržaj snopa direktorija.\n"
+"    Naredba „dirs“ prikaže trenutni sadržaj snopa direktorija.\n"
 "\n"
 "    Završi s kȏdom 0 osim ako je dȃna nevaljana opcija\n"
 "    ili nije uspjela promjena direktorija."
@@ -5373,7 +5373,7 @@ msgid ""
 msgstr ""
 "Ispiše sadržaj snopa direktorija.\n"
 "\n"
-"    Pokaže popis trenutačno zapamćenih direktorija. Direktoriji se unose\n"
+"    Pokaže popis trenutno zapamćenih direktorija. Direktoriji se unose\n"
 "    na popis pomoću naredbe „pushd“, a s naredbom „popd“ se uklanjaju.\n"
 "    \n"
 "    Opcije:\n"
@@ -5495,7 +5495,7 @@ msgstr ""
 "    se ponašaju kao da im je vrijednost nula, ili prazni string.\n"
 "\n"
 "    Završi s kȏdom 0 osim ako je dana nevaljana opcija\n"
-"    ili se dogodila greška pisanja ili greška pri dodijeli."
+"    ili se dogodila greška u pisanju ili greška pri dodijeli."
 
 #: builtins.c:1971
 #, fuzzy
@@ -5538,16 +5538,17 @@ msgstr ""
 "      -p   ispiše postojeće specifikacije kompletiranja u formatu\n"
 "             upotrebljivom za ulaz\n"
 "      -r   ukloni specifikaciju kompletiranja za svako dȃno IME\n"
-"             ili ukloni sve specifikacije ako nisu dȃna IMEna\n"
+"             ili ukloni sve specifikacije ako nisu dȃna IMENA\n"
 "      -D   na naredbe koje nemaju vlastitu specifikaciju za kompletiranje\n"
 "             primjeni „zadano“ ponašanje specifikacija i akcija\n"
 "      -E   primjeni zadano ponašanje specifikacija i akcija i na „prazne“\n"
-"             naredbe, to jest pokuša kompletirati prazni redak\n"
+"             naredbe --; pokuša kompletirati prazni redak\n"
 "      -I   primjeni zadano ponašanje specifikacija i akcija i na početnu\n"
 "             (obično naredbu) riječ\n"
 "\n"
 "    Redoslijed akcija pri pokušaju kompletiranja slijedi gore dȃni poredak\n"
-"    opcija u verzalu. Opcija „-D“ ima veći prioritet od opcije „-E“.\n"
+"    opcija pisanih u verzalu. Opcija „-D“ ima veći prioritet od opcije „-"
+"E“.\n"
 "    a obje imaju veći prioritet od opcije „-I“\n"
 "\n"
 "    Završi s kȏdom 0 osim ako je dȃna nevaljana opcija\n"
@@ -5608,9 +5609,9 @@ msgstr ""
 "Izmjena ili prikaz opcija za kompletiranje.\n"
 "\n"
 "    Izmijenite opcije kompletiranja za svako IME u skladu s opcijama,\n"
-"    ili za kompletiranje koje se trenutačno vrši ako nisu dȃna IMEna.\n"
+"    ili za kompletiranje koje se trenutno vrši ako nisu dȃna IMEna.\n"
 "    Ako nema opcija, ispišu se opcije kompletiranja za svako IME ili\n"
-"    za trenutačno kompletiranje.\n"
+"    za trenutno kompletiranje.\n"
 "\n"
 "    Opcije:\n"
 "      -o OPCIJA   ovu OPCIJU kompletiranja postavi za svako IME\n"
@@ -5622,9 +5623,9 @@ msgstr ""
 "\n"
 "    Svako IME ukazuje na naredbu za koju specifikacija kompletiranja mora\n"
 "    već prije biti definirana pomoću ugrađene naredbe „complete“. Ako nije\n"
-"    dȃno nijedno IME, funkcija koja trenutačno generira kompletiranja mora\n"
+"    dȃno nijedno IME, funkcija koja trenutno generira kompletiranja mora\n"
 "    pozvati „compopt“; time se onda promjene opcije za taj generator koji\n"
-"    trenutačno izvršava kompletiranja.\n"
+"    trenutno izvršava kompletiranja.\n"
 "\n"
 "    Završi s kȏdom 0 osim ako nije dȃna nevaljana opcija\n"
 "    ili nije definirana specifikacija za kompletiranje IMEna."
@@ -5711,16 +5712,12 @@ msgstr ""
 "\n"
 "    Sinonim za „mapfile“."
 
-#, fuzzy
-#~ msgid "Copyright (C) 2019 Free Software Foundation, Inc."
-#~ msgstr "Copyright (C) 2018 Free Software Foundation, Inc."
-
 #~ msgid ""
 #~ "Returns the context of the current subroutine call.\n"
 #~ "    \n"
 #~ "    Without EXPR, returns "
 #~ msgstr ""
-#~ "Vraća kontekst od trenutačnoga poziva funkciji.\n"
+#~ "Vraća kontekst od trenutnog poziva funkciji.\n"
 #~ "    \n"
 #~ "    Bez EXPR, rezultati "
 
@@ -5729,6 +5726,9 @@ msgstr ""
 
 #~ msgid "Unknown Signal #"
 #~ msgstr "Nepoznati signal #"
+
+#~ msgid "Copyright (C) 2018 Free Software Foundation, Inc."
+#~ msgstr "Copyright (C) 2018 Free Software Foundation, Inc."
 
 #~ msgid ""
 #~ "License GPLv2+: GNU GPL version 2 or later <http://gnu.org/licenses/gpl."
