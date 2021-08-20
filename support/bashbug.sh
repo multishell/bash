@@ -26,14 +26,14 @@
 # configuration section:
 #	these variables are filled in by the make target in Makefile
 #
-MACHINE="x86_64"
-OS="linux-gnu"
-CC="gcc"
-CFLAGS="-g -O2 -Wno-parentheses -Wno-format-security"
-RELEASE="5.0"
+MACHINE="!MACHINE!"
+OS="!OS!"
+CC="!CC!"
+CFLAGS="!CFLAGS!"
+RELEASE="!RELEASE!"
 PATCHLEVEL="!PATCHLEVEL!"
-RELSTATUS="release"
-MACHTYPE="x86_64-pc-linux-gnu"
+RELSTATUS="!RELSTATUS!"
+MACHTYPE="!MACHTYPE!"
 
 PATH=/bin:/usr/bin:/usr/local/bin:$PATH
 export PATH
@@ -43,7 +43,7 @@ export PATH
 
 #Securely create a temporary directory for the temporary files
 TEMPDIR=$TMPDIR/bbug.$$
-(umask 077 && mkdir $TEMPDIR) || {
+(umask 077 && mkdir "$TEMPDIR") || {
 	echo "$0: could not create temporary directory" >&2
 	exit 1
 }
